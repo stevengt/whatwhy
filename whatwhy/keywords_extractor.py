@@ -26,7 +26,7 @@ class KeywordsExtractor():
     def add_full_what_and_why_texts_to_df(self, column="Text"):
         """Extracts the 'what' and 'why' phrases from all text using Giveme5W1H."""
         self.df["What"] = None
-        self.df["Why"] = None        
+        self.df["Why"] = None  
         for id, row in self.df.iterrows():
             try:
                 text = row[column]
@@ -34,8 +34,10 @@ class KeywordsExtractor():
                     continue
                 doc = Document.from_text(text)
                 doc = self.extractor.parse(doc)            
-                row["What"] = doc.get_top_answer('what').get_parts_as_text()           
-                row["Why"] = doc.get_top_answer('why').get_parts_as_text()
+                what = doc.get_top_answer('what').get_parts_as_text()   
+                why = doc.get_top_answer('why').get_parts_as_text()
+                self.df.at[id, "What"] = what        
+                self.df.at[id, "Why"] = why
             except:
                 continue
 
@@ -77,7 +79,7 @@ class KeywordsExtractor():
     def add_what_and_why_keywords_to_df(self):
         self.preprocess_text()
         self.add_full_what_and_why_texts_to_df()
-        self.tokenize_and_lemmatize_what_and_why_columns()
-        self.filter_words_from_what_and_why_lists()
+        # self.tokenize_and_lemmatize_what_and_why_columns()
+        # self.filter_words_from_what_and_why_lists()
         return self.df
 
