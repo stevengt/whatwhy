@@ -1,11 +1,9 @@
 import re
-import string
-import pandas as pd
 import numpy as np
-import nltk
-from nltk.stem import WordNetLemmatizer
+from gingerit.gingerit import GingerIt
+from textblob import TextBlob
 
-lemmatizer = WordNetLemmatizer()
+spelling_and_grammar_parser = GingerIt()
 
 def remove_reply_tag_from_tweet_text(text):
     if text is None or text is np.nan:
@@ -16,24 +14,14 @@ def remove_reply_tag_from_tweet_text(text):
         text = text.replace(reply_tag, "")
     return text
 
-def remove_punctuation_from_text(text):
-    if text is None or text is np.nan:
-        return ""
-    try:
-        return text.translate( str.maketrans("", "", string.punctuation) )
-    except:
-        return text
+def autocorrect_spelling_and_grammar(text):
+    return spelling_and_grammar_parser.parse(text)["result"]
 
-def get_list_of_words_from_text(text):
+def get_list_of_lemmatized_words_from_text(text):
     if text is None or text is np.nan:
         return []
     try:
-        return nltk.word_tokenize(text)
+        text_blob = TextBlob(text)
+        return list( text_blob.words.singularize().lemmatize() )
     except:
         return []
-
-def lemmatize_list_of_words(words):
-    try:
-        return [ lemmatizer.lemmatize(word) for word in words ]
-    except:
-        return words
