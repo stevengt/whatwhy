@@ -13,9 +13,10 @@ defusedxml==0.6.0
 editdistance==0.5.3
 entrypoints==0.3
 Flask==1.1.1
-future==0.18.0
+future==0.17.1
 geographiclib==1.50
 geopy==1.20.0
+gingerit==0.8.0
 giveme5w1h==1.0.17
 hyperlink==19.0.0
 idna==2.8
@@ -73,6 +74,7 @@ spacy==2.2.1
 srsly==0.1.0
 terminado==0.8.2
 testpath==0.4.2
+textblob==0.15.3
 thinc==7.1.1
 tornado==6.0.3
 tqdm==4.36.1
