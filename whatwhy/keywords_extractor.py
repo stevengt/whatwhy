@@ -123,5 +123,10 @@ class KeywordsExtractor():
         return words
     
     def get_named_entities_from_text(self, text):
-        doc = self._spacy_nlp(text)
-        return [ named_entity.text.lower() for named_entity in doc.ents ]
+        if text is None or text is np.nan:
+            return []
+        try:
+            doc = self._spacy_nlp(text)
+            return [ named_entity.text.lower() for named_entity in doc.ents ]
+        except:
+            return []
