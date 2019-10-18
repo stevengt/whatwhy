@@ -13,5 +13,5 @@ def get_df_with_keywords_from_csv(filename, nrows=None):
 
 #tweets_csv_file = "/home/zach/git/whatwhy/Tweets/all_tweets_aggregated.csv"
 tweets_csv_file = "/home/stevengt/Documents/code/whatwhy/Tweets/all_tweets_aggregated.csv"
-df = get_df_with_keywords_from_csv(tweets_csv_file, nrows=50 )
+df = get_df_with_keywords_from_csv(tweets_csv_file, nrows=1000 )
 # print(df)

@@ -5,7 +5,7 @@ from Giveme5W1H.extractor.document import Document
 from Giveme5W1H.extractor.extractor import MasterExtractor
 import spacy
 import data_cleaner
-import dask.dataframe as dd
+import dask.dataframe as ddf
 
 _5W1H_WORDS = ["Who", "What", "When", "Where", "Why", "How"]
 
@@ -35,22 +35,30 @@ class KeywordsExtractor():
         except Exception as e:
             logging.error(e)
 
+    def get_df_as_dask_df(self):
+        return ddf.from_pandas(self._df, npartitions=4)
+
     def preprocess_text(self):
         """Removes Twitter @reply tags and autocorrects spelling and grammar."""
+        
+        def get_preprocessed_text_from_dask_df_partition(df_partition):
+            return df_partition["Text"].map( data_cleaner.remove_reply_tag_from_tweet_text ) #\
+                                                        # .map( data_cleaner.autocorrect_spelling_and_grammar )
+
         logging.info("Preprocessing text...")
-        self._df["Preprocessed Text"] = self._df["Text"].map( data_cleaner.remove_reply_tag_from_tweet_text ) \
-                                                        .map( data_cleaner.autocorrect_spelling_and_grammar )
+        self._df["Preprocessed Text"] = self.get_df_as_dask_df().map_partitions( get_preprocessed_text_from_dask_df_partition ).compute(scheduler="processes")
 
     def add_raw_5w1h_texts_to_df(self):
         """Extracts the 5w1h phrases from all text."""
-        
-        def add_raw_5w1h_texts_to_dask_df_partition(df_partition):
+
+        def add_raw_5w1h_texts_to_dask_df_partition(df_partition):            
             try:
                 _5w1h_extractor = MasterExtractor()
                 df_partition[ self.column_names["5w1h raw text"] ] = df_partition.apply( lambda row: \
                                                                                                 get_raw_5w1h_texts_from_text( row["Preprocessed Text"], \
                                                                                                                               _5w1h_extractor ), \
                                                                                          axis=1 )
+                # The keyword columns initially contain raw text, and will be filtered later.
                 df_partition[ self.column_names["5w1h keywords"] ] = df_partition[ self.column_names["5w1h raw text"] ]
             except Exception as e:
                 logging.error(e)
@@ -78,8 +86,7 @@ class KeywordsExtractor():
                 return ""
 
         logging.info("Extracting 5w1h phrases from text...")
-        dask_df = dd.from_pandas(self._df, npartitions=30)
-        self._df = dask_df.map_partitions( add_raw_5w1h_texts_to_dask_df_partition ).compute(scheduler="processes") 
+        self._df = self.get_df_as_dask_df().map_partitions( add_raw_5w1h_texts_to_dask_df_partition ).compute(scheduler="processes") 
 
     def initialize_5w1h_columns(self):
         for column_name in self.column_names["5w1h raw text"]:
@@ -89,28 +96,34 @@ class KeywordsExtractor():
 
     def normalize_5w1h_keyword_columns(self):
         """Converts the raw 5w1h texts to lists of lowercase and lemmatized words."""
+
+        def convert_5w1h_keyword_columns_to_lowercase():
+            for column_name in self.column_names["5w1h keywords"]:
+                self._df[column_name] = self._df[column_name].str.lower()
+        
+        def tokenize_and_lemmatize_5w1h_keyword_columns():
+            for column_name in self.column_names["5w1h keywords"]:
+                self._df[column_name] = self._df[column_name].map( data_cleaner.get_list_of_lemmatized_words_from_text )
+
         logging.info("Normalizing and tokenizing 5w1h text...")
-        self.convert_5w1h_keyword_columns_to_lowercase()
-        self.tokenize_and_lemmatize_5w1h_keyword_columns()
-
-    def convert_5w1h_keyword_columns_to_lowercase(self):
-        for column_name in self.column_names["5w1h keywords"]:
-            self._df[column_name] = self._df[column_name].str.lower()
-
-    def tokenize_and_lemmatize_5w1h_keyword_columns(self):
-        for column_name in self.column_names["5w1h keywords"]:
-            self._df[column_name] = self._df[column_name].map( data_cleaner.get_list_of_lemmatized_words_from_text )
+        convert_5w1h_keyword_columns_to_lowercase()
+        tokenize_and_lemmatize_5w1h_keyword_columns()
 
     def filter_words_from_5w1h_keyword_columns(self):
         """Extracts the most important keywords from the 5w1h columns."""
+        
+        def filter_words_from_5w1h_keyword_columns_in_dask_df_partition(df_partition):
+            for question_type in _5W1H_WORDS:
+                raw_text_column_name = question_type + " Raw Text"
+                keywords_column_name = question_type + " Keywords"
+                df_partition[keywords_column_name] = df_partition.apply( lambda row: \
+                                                                                self.get_keywords_from_raw_and_tokenized_text( row[raw_text_column_name], \
+                                                                                                                               row[keywords_column_name] ), \
+                                                                         axis=1 )
+            return df_partition
+
         logging.info("Extracting keywords from 5w1h text...")
-        for question_type in _5W1H_WORDS:
-            raw_text_column_name = question_type + " Raw Text"
-            keywords_column_name = question_type + " Keywords"
-            self._df[keywords_column_name] = self._df.apply( lambda row: \
-                                                                    self.get_keywords_from_raw_and_tokenized_text( row[raw_text_column_name], \
-                                                                                                                   row[keywords_column_name] ), \
-                                                             axis=1 )
+        self._df = self.get_df_as_dask_df().map_partitions( filter_words_from_5w1h_keyword_columns_in_dask_df_partition ).compute(scheduler="processes") 
 
     def get_keywords_from_raw_and_tokenized_text(self, raw_text, words):
         """Extracts the most important keywords from a pair of raw/tokenized text."""
