@@ -5,6 +5,7 @@ from Giveme5W1H.extractor.document import Document
 from Giveme5W1H.extractor.extractor import MasterExtractor
 import spacy
 import data_cleaner
+import dask.dataframe as dd
 
 _5W1H_WORDS = ["Who", "What", "When", "Where", "Why", "How"]
 
@@ -16,31 +17,57 @@ class KeywordsExtractor():
 
     def __init__(self, df):
         self._df = df
-        self._5w1h_extractor = MasterExtractor()
         self._spacy_nlp = spacy.load("en_core_web_sm")
         self.column_names = {
-            "raw text" : [ word + " Raw Text" for word in _5W1H_WORDS ],
-            "keywords" : [ word + " Keywords" for word in _5W1H_WORDS] 
+            "5w1h raw text" : [ word + " Raw Text" for word in _5W1H_WORDS ],
+            "5w1h keywords" : [ word + " Keywords" for word in _5W1H_WORDS] 
         }
         self.preprocess_text()
 
     def add_5w1h_keywords_to_df(self):
-        self.initialize_5w1h_columns()
-        self.add_raw_5w1h_texts_to_df()
-        self.normalize_5w1h_keyword_columns()
-        self.filter_words_from_5w1h_keyword_columns()
-        logging.info("Done.")
-        return self._df
+        try:
+            self.initialize_5w1h_columns()
+            self.add_raw_5w1h_texts_to_df()
+            self.normalize_5w1h_keyword_columns()
+            self.filter_words_from_5w1h_keyword_columns()
+            logging.info("Done.")
+            return self._df
+        except Exception as e:
+            logging.error(e)
 
     def preprocess_text(self):
         """Removes Twitter @reply tags and autocorrects spelling and grammar."""
         logging.info("Preprocessing text...")
         self._df["Preprocessed Text"] = self._df["Text"].map( data_cleaner.remove_reply_tag_from_tweet_text ) \
                                                         .map( data_cleaner.autocorrect_spelling_and_grammar )
-        
-    def add_raw_5w1h_texts_to_df(self, column="Preprocessed Text"):
+
+    def add_raw_5w1h_texts_to_df(self):
         """Extracts the 5w1h phrases from all text."""
         
+        def add_raw_5w1h_texts_to_dask_df_partition(df_partition):
+            try:
+                _5w1h_extractor = MasterExtractor()
+                df_partition[ self.column_names["5w1h raw text"] ] = df_partition.apply( lambda row: \
+                                                                                                get_raw_5w1h_texts_from_text( row["Preprocessed Text"], \
+                                                                                                                              _5w1h_extractor ), \
+                                                                                         axis=1 )
+                df_partition[ self.column_names["5w1h keywords"] ] = df_partition[ self.column_names["5w1h raw text"] ]
+            except Exception as e:
+                logging.error(e)
+            return df_partition
+
+        def get_raw_5w1h_texts_from_text(text, _5w1h_extractor):
+            empty_column_vals = pd.Series( [ None for question_type in _5W1H_WORDS ] )
+            if text is None or text is np.nan:
+                return empty_column_vals
+            try:
+                doc = Document.from_text(text)
+                doc = _5w1h_extractor.parse(doc)
+                return pd.Series( [ get_5w1h_phrase_or_empty_string(doc, question_type) for question_type in _5W1H_WORDS ] )
+            except Exception as e:
+                logging.warning(e)
+                return empty_column_vals
+
         def get_5w1h_phrase_or_empty_string(doc, question_type):
             try:
                 phrase = doc.get_top_answer( question_type.lower() ).get_parts_as_text()
@@ -51,25 +78,13 @@ class KeywordsExtractor():
                 return ""
 
         logging.info("Extracting 5w1h phrases from text...")
-        for id, row in self._df.iterrows():
-            try:
-                text = row[column]
-                if text is None or text is np.nan:
-                    continue
-                doc = Document.from_text(text)
-                doc = self._5w1h_extractor.parse(doc)
-                for question_type in _5W1H_WORDS:
-                    raw_text = get_5w1h_phrase_or_empty_string(doc, question_type)
-                    self._df.at[id, question_type + " Raw Text"] = raw_text
-                    self._df.at[id, question_type + " Keywords"] = raw_text # This column will later be converted from raw text to keywords.
-            except Exception as e:
-                logging.debug(e)
-                continue
+        dask_df = dd.from_pandas(self._df, npartitions=30)
+        self._df = dask_df.map_partitions( add_raw_5w1h_texts_to_dask_df_partition ).compute(scheduler="processes") 
 
     def initialize_5w1h_columns(self):
-        for column_name in self.column_names["raw text"]:
+        for column_name in self.column_names["5w1h raw text"]:
             self._df[column_name] = None
-        for column_name in self.column_names["keywords"]:
+        for column_name in self.column_names["5w1h keywords"]:
             self._df[column_name] = None
 
     def normalize_5w1h_keyword_columns(self):
@@ -79,11 +94,11 @@ class KeywordsExtractor():
         self.tokenize_and_lemmatize_5w1h_keyword_columns()
 
     def convert_5w1h_keyword_columns_to_lowercase(self):
-        for column_name in self.column_names["keywords"]:
+        for column_name in self.column_names["5w1h keywords"]:
             self._df[column_name] = self._df[column_name].str.lower()
 
     def tokenize_and_lemmatize_5w1h_keyword_columns(self):
-        for column_name in self.column_names["keywords"]:
+        for column_name in self.column_names["5w1h keywords"]:
             self._df[column_name] = self._df[column_name].map( data_cleaner.get_list_of_lemmatized_words_from_text )
 
     def filter_words_from_5w1h_keyword_columns(self):
