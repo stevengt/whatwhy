@@ -1,6 +1,4 @@
 FROM ubuntu:latest
-WORKDIR  /opt
-ENV LC_ALL C.UTF-8
 RUN apt-get update -y && \
     apt-get install -y \
         curl \
@@ -10,8 +8,11 @@ RUN apt-get update -y && \
         python3-pip \
         unzip \
         wget
-RUN pip3 install giveme5w1h
-RUN giveme5w1h-corenlp install
-EXPOSE 9099
+RUN pip3 install giveme5w1h && \
+    giveme5w1h-corenlp install && \
+    python3 -m nltk.downloader wordnet
+ENV LC_ALL C.UTF-8
+EXPOSE 9099 
+WORKDIR /opt/giveme5w1h
 COPY start-giveme5w1h-rest-server.sh start-giveme5w1h-rest-server.sh
-CMD "/opt/start-giveme5w1h-rest-server.sh"
+CMD /opt/giveme5w1h/start-giveme5w1h-rest-server.sh
