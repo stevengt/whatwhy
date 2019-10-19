@@ -1,13 +1,11 @@
 import logging
 import pandas as pd
+import dask.dataframe as ddf
 import numpy as np
-from Giveme5W1H.extractor.document import Document
-from Giveme5W1H.extractor.extractor import MasterExtractor
 import spacy
 import data_cleaner
-import dask.dataframe as ddf
+from five_w_one_h_extractor import _5W1H_WORDS, FiveWOneHExtractor
 
-_5W1H_WORDS = ["Who", "What", "When", "Where", "Why", "How"]
 
 class KeywordsExtractor():
     """
@@ -53,7 +51,7 @@ class KeywordsExtractor():
 
         def add_raw_5w1h_texts_to_dask_df_partition(df_partition):            
             try:
-                _5w1h_extractor = MasterExtractor()
+                _5w1h_extractor = FiveWOneHExtractor()
                 df_partition[ self.column_names["5w1h raw text"] ] = df_partition.apply( lambda row: \
                                                                                                 get_raw_5w1h_texts_from_text( row["Preprocessed Text"], \
                                                                                                                               _5w1h_extractor ), \
@@ -69,21 +67,11 @@ class KeywordsExtractor():
             if text is None or text is np.nan:
                 return empty_column_vals
             try:
-                doc = Document.from_text(text)
-                doc = _5w1h_extractor.parse(doc)
-                return pd.Series( [ get_5w1h_phrase_or_empty_string(doc, question_type) for question_type in _5W1H_WORDS ] )
+                phrases_dict = _5w1h_extractor.get_5w1h_dict_from_text(text)
+                return pd.Series( [ phrases_dict[question_type] for question_type in _5W1H_WORDS ] )
             except Exception as e:
                 logging.warning(e)
                 return empty_column_vals
-
-        def get_5w1h_phrase_or_empty_string(doc, question_type):
-            try:
-                phrase = doc.get_top_answer( question_type.lower() ).get_parts_as_text()
-                if phrase is None:
-                    phrase = ""
-                return phrase
-            except:
-                return ""
 
         logging.info("Extracting 5w1h phrases from text...")
         self._df = self.get_df_as_dask_df().map_partitions( add_raw_5w1h_texts_to_dask_df_partition ).compute(scheduler="processes") 
