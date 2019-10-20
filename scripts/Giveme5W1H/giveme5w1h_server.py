@@ -13,7 +13,7 @@ from Giveme5W1H.extractor.tools.file.writer import Writer
 from Giveme5W1H.extractor.preprocessors.preprocessor_core_nlp import Preprocessor
 
 app = Flask(__name__)
-extractor = None
+corenlp_server_url = None
 reader = Reader()
 writer = Writer()
 
@@ -26,6 +26,8 @@ def request_to_document():
 def extract():
     document = request_to_document()
     if document:
+        extractor_preprocessor = Preprocessor(corenlp_server_url)
+        extractor = MasterExtractor(preprocessor=extractor_preprocessor)
         extractor.parse(document)
         answer = writer.generate_json(document)
         return jsonify(answer)
@@ -41,12 +43,10 @@ def main():
     
     print(f"Starting server on {args.ip_address}:{args.port}")
 
+    global corenlp_server_url
     corenlp_server_url = "http://" + str(args.core_nlp_server_host) + ":" + str(args.core_nlp_server_port)
     print(f"Using Stanford Core NLP server at {corenlp_server_url}")
-    global extractor
-    extractor_preprocessor = Preprocessor(corenlp_server_url)
-    extractor = MasterExtractor(preprocessor=extractor_preprocessor)
-    
+
     app.run(args.ip_address, args.port, args.debug)
     print("Server has stopped.")
 
