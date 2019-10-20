@@ -3,9 +3,26 @@ services:
     giveme5w1h-service:
         build: .
         image: giveme5w1h
+        environment:
+            - CORE_NLP_SERVER_HOST=corenlp-service
         deploy:
-            replicas: 1
+            replicas: 2
             restart_policy:
                 condition: any
         ports:
             - 9099:9099
+        networks:
+            - giveme5w1h-network
+    corenlp-service:
+        image: nlpbox/corenlp:3.8.0
+        deploy:
+            replicas: 2
+            restart_policy:
+                condition: any
+        ports:
+            - 9000:9000
+        networks:
+            - giveme5w1h-network
+networks:
+    giveme5w1h-network:
+        driver: overlay
