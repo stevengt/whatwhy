@@ -3,6 +3,7 @@ import json
 import requests
 
 _5W1H_WORDS = ["who", "what", "when", "where", "why", "how"]
+REQUEST_TIMEOUT_IN_SECONDS = 5
 
 class FiveWOneHExtractor():
     """
@@ -24,7 +25,7 @@ class FiveWOneHExtractor():
         
         try:
             api_request_params = self.get_api_request_params_from_text(text)
-            response = requests.post( self.server_url, data=api_request_params )
+            response = requests.post( self.server_url, data=api_request_params, timeout=REQUEST_TIMEOUT_IN_SECONDS )
             if response.ok and response.content is not None:
                 response_json = json.loads( response.content, encoding='utf-8', strict=True )
                 for question_type in _5W1H_WORDS:
