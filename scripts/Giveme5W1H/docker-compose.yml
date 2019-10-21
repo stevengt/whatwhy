@@ -1,4 +1,4 @@
-version: "3"
+version: "3.4"
 services:
     giveme5w1h-service:
         build: .
@@ -20,6 +20,12 @@ services:
         ports:
             - 9000:9000
         command: java -Xms2g -Xmx3g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer --timeout 15000 --preload "tokenize,ssplit,pos,lemma,parse,ner,depparse,mention,coref"
+        healthcheck:
+            test: wget --quiet --spider --tries=1 --post-data "The quick brown fox jumped over the lazy dog." "http://localhost:9000/?properties={%22annotators%22%3A%22tokenize%2Cssplit%2Cpos%22%2C%22outputFormat%22%3A%22json%22}" || exit 1
+            interval: 30s
+            timeout: 15s
+            retries: 3
+            start_period: 2m
         deploy:
             replicas: 2
             restart_policy:
