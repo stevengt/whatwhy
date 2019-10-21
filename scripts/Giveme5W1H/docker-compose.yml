@@ -19,7 +19,7 @@ services:
             - giveme5w1h-network
         ports:
             - 9000:9000
-        command: java -Xms2g -Xmx3g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer --timeout 1000 --preload "tokenize,ssplit,pos,lemma,parse,ner,depparse,mention,coref"
+        command: java -Xms2g -Xmx3g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer --timeout 15000 --preload "tokenize,ssplit,pos,lemma,parse,ner,depparse,mention,coref"
         deploy:
             replicas: 2
             restart_policy:
