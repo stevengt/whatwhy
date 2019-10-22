@@ -4,7 +4,7 @@ import dask.dataframe as ddf
 import numpy as np
 import spacy
 import data_cleaner
-from whatwhy.services.giveme5w1h_proxy_server import QUESTION_WORDS
+from whatwhy import QUESTION_WORDS
 from five_w_one_h_extractor import FiveWOneHExtractor
 
 

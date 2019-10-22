@@ -24,10 +24,10 @@ with a JSON body formatted as follows:
 
 import argparse
 from flask import Flask
-from whatwhy.services.giveme5w1h_proxy_server.request_handlers import Get5W1HPhrasesRequestHandler
+from .request_handlers import Get5W1HPhrasesRequestHandler
 
 app = Flask(__name__)
-corenlp_server_url = None
+app.config["corenlp_server_url"] = None
 
 @app.route('/get-5w1h-phrases', methods=['POST'])
 def get_5w1h_phrases():
@@ -44,8 +44,8 @@ def main():
     
     print(f"Starting server on {args.ip_address}:{args.port}")
 
-    global corenlp_server_url
     corenlp_server_url = "http://" + str(args.core_nlp_server_host) + ":" + str(args.core_nlp_server_port)
+    app.config["corenlp_server_url"] = corenlp_server_url
     print(f"Using Stanford Core NLP server at {corenlp_server_url}")
 
     app.run(args.ip_address, args.port, args.debug)

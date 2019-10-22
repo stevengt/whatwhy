@@ -1,7 +1,7 @@
 import logging
 import json
 import requests
-from whatwhy.services.giveme5w1h_proxy_server import QUESTION_WORDS
+from whatwhy import QUESTION_WORDS
 
 REQUEST_TIMEOUT_IN_SECONDS = 5
 

@@ -1,7 +1,13 @@
 
-from flask import jsonify
-from whatwhy.services.giveme5w1h_proxy_server.request_handlers.request_params import RequestParams
-from whatwhy.services.giveme5w1h_proxy_server.text_processing import TextSegmentBatchProcessor, get_5w1h_extractor
+from flask import current_app, jsonify
+from Giveme5W1H.extractor.preprocessors.preprocessor_core_nlp import Preprocessor
+from Giveme5W1H.extractor.extractor import MasterExtractor
+from .request_params import RequestParams
+from whatwhy.services.giveme5w1h_proxy_server.text_processing import TextSegmentBatchProcessor
+
+def get_5w1h_extractor():
+    extractor_preprocessor = Preprocessor(current_app.config["corenlp_server_url"])
+    return MasterExtractor(preprocessor=extractor_preprocessor)
 
 class RequestHandler():
     def __init__(self, request_type):
