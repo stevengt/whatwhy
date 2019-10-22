@@ -4,7 +4,8 @@ import dask.dataframe as ddf
 import numpy as np
 import spacy
 import data_cleaner
-from five_w_one_h_extractor import _5W1H_WORDS, FiveWOneHExtractor
+from services.Giveme5W1H_Proxy_Server import QUESTION_WORDS
+from five_w_one_h_extractor import FiveWOneHExtractor
 
 
 class KeywordsExtractor():
@@ -17,8 +18,8 @@ class KeywordsExtractor():
         self._df = df
         self._spacy_nlp = spacy.load("en_core_web_sm")
         self.column_names = {
-            "5w1h raw text" : [ word + " Raw Text" for word in _5W1H_WORDS ],
-            "5w1h keywords" : [ word + " Keywords" for word in _5W1H_WORDS] 
+            "5w1h raw text" : [ word + " Raw Text" for word in QUESTION_WORDS ],
+            "5w1h keywords" : [ word + " Keywords" for word in QUESTION_WORDS] 
         }
         self.preprocess_text()
 
@@ -63,12 +64,12 @@ class KeywordsExtractor():
             return df_partition
 
         def get_raw_5w1h_texts_from_text(text, _5w1h_extractor):
-            empty_column_vals = pd.Series( [ None for question_type in _5W1H_WORDS ] )
+            empty_column_vals = pd.Series( [ None for question_type in QUESTION_WORDS ] )
             if text is None or text is np.nan:
                 return empty_column_vals
             try:
                 phrases_dict = _5w1h_extractor.get_5w1h_dict_from_text(text)
-                return pd.Series( [ phrases_dict[question_type] for question_type in _5W1H_WORDS ] )
+                return pd.Series( [ phrases_dict[question_type] for question_type in QUESTION_WORDS ] )
             except Exception as e:
                 logging.warning(e)
                 return empty_column_vals
@@ -101,7 +102,7 @@ class KeywordsExtractor():
         """Extracts the most important keywords from the 5w1h columns."""
         
         def filter_words_from_5w1h_keyword_columns_in_dask_df_partition(df_partition):
-            for question_type in _5W1H_WORDS:
+            for question_type in QUESTION_WORDS:
                 raw_text_column_name = question_type + " Raw Text"
                 keywords_column_name = question_type + " Keywords"
                 df_partition[keywords_column_name] = df_partition.apply( lambda row: \

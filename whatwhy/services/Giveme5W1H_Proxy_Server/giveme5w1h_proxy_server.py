@@ -1,5 +1,25 @@
 """
-This is a simple server to wrap some of the functionality of Giveme5W1H.
+This is a server to wrap some of the functionality of Giveme5W1H.
+
+To get the 5W1H ("who", "what", "when", "where", "why", "how") phrases
+from text segments, send a POST request to the server endpoint /get-5w1h-phrases
+with a JSON body formatted as follows:
+
+    Request Format:
+        - "text-segments"   : An array of objects with a "content" field and an optional "id" field.
+        - "batch-size"      : (Optional) If specified, this will concatenate consecutive text segments
+                              into batches of the requested size to be processed as a single text segment.
+                              This may speed up execution time but result in a loss of accuracy.
+        - "max-num-candidate-phrases" : (Optional) This specifies the maximum number of phrases to
+                                        return for each 5W1H word.
+
+    Response Format:
+        - The response will be an array of objects with the following fields,
+          each corresponding to the results of one text segment batch:
+            - "id's"        : An array of the ID's of all text segments in the batch.
+            - "5w1h-phrases": An object with the following fields, each of which contain an array
+                              of candidate phrases for the corresponding 5W1H word:
+                                -"who", "what", "when", "where", "why", "how"
 """
 
 import argparse
@@ -9,7 +29,7 @@ from Giveme5W1H.extractor.document import Document
 from Giveme5W1H.extractor.extractor import MasterExtractor
 from Giveme5W1H.extractor.preprocessors.preprocessor_core_nlp import Preprocessor
 
-_5W1H_WORDS = ["who", "what", "when", "where", "why", "how"]
+QUESTION_WORDS = ["who", "what", "when", "where", "why", "how"]
 
 app = Flask(__name__)
 corenlp_server_url = None
@@ -60,7 +80,7 @@ class TextSegmentBatchProcessor():
             aggregate_text_segment_contents = self.text_segment_batch.get_aggregate_text_segment_contents()
             document = Document(aggregate_text_segment_contents)
             document = self._5w1h_extractor.parse(document)
-            for question_type in _5W1H_WORDS:
+            for question_type in QUESTION_WORDS:
                 candidate_phrases = document.get_answers(question_type)[:max_num_candidate_phrases]
                 self._5w1h_phrases[question_type] = [ candidate_phrase.get_parts_as_text() for candidate_phrase in candidate_phrases ]
         return self._5w1h_phrases
@@ -123,7 +143,7 @@ class Get5W1HPhrasesRequestHandler(RequestHandler):
             batch_results.append(cur_batch_results)
         return jsonify(batch_results)
 
-@app.route('/get5w1h-phrases', methods=['POST'])
+@app.route('/get-5w1h-phrases', methods=['POST'])
 def get_5w1h_phrases():
     return Get5W1HPhrasesRequestHandler().get_response()
 
