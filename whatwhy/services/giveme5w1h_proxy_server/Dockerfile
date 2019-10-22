@@ -8,6 +8,7 @@ RUN pip install giveme5w1h && \
     python -m nltk.downloader wordnet
 ENV LC_ALL C.UTF-8
 EXPOSE 9099 
-WORKDIR /opt/giveme5w1h
-COPY giveme5w1h_proxy_server.py giveme5w1h_proxy_server.py
-CMD python giveme5w1h_proxy_server.py --core-nlp-server-host $CORE_NLP_SERVER_HOST
+WORKDIR /opt/whatwhy
+COPY . .
+RUN pip install .
+CMD giveme5w1h-proxy-server --core-nlp-server-host $CORE_NLP_SERVER_HOST

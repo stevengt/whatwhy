@@ -1,0 +1,9 @@
+# Byte-compiled / optimized / DLL files
+**__pycache__/
+**.py[cod]
+
+# IPython Notebook checkpoints
+**.ipynb_checkpoints/
+
+# Raw files containing tweet ID's and text.
+Tweets/
