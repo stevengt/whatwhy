@@ -73,6 +73,8 @@ class RequestParams():
         request_params = RequestParams()
 
         request_params.batch_size = request_params_json.get("batch-size")
+        if request_params.batch_size is None:
+            request_params.batch_size = 1
 
         request_params.max_num_candidate_phrases = request_params_json.get("max-num-candidate-phrases")
         if request_params.max_num_candidate_phrases is None:
