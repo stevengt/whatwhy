@@ -28,8 +28,8 @@ class TextSegmentBatchProcessor():
 
     def __init__(self, text_segment_batch, extractor):
         self.text_segment_batch = text_segment_batch
-        self._5w1h_extractor = extractor
-        self._5w1h_phrases = None
+        self.wh_phrase_extractor = extractor
+        self.wh_phrases = None
 
     @staticmethod
     def from_text_segments_and_extractor(text_segments, extractor):
@@ -39,13 +39,13 @@ class TextSegmentBatchProcessor():
     def get_text_segment_ids(self):
         return self.text_segment_batch.get_text_segment_ids()
 
-    def get_5w1h_phrases(self, max_num_candidate_phrases=1):
-        if self._5w1h_phrases is None:
-            self._5w1h_phrases = {}
+    def get_wh_phrases(self, max_num_candidate_phrases=1):
+        if self.wh_phrases is None:
+            self.wh_phrases = {}
             aggregate_text_segment_contents = self.text_segment_batch.get_aggregate_text_segment_contents()
             document = Document(aggregate_text_segment_contents)
-            document = self._5w1h_extractor.parse(document)
+            document = self.wh_phrase_extractor.parse(document)
             for question_type in QUESTION_WORDS:
                 candidate_phrases = document.get_answers(question_type)[:max_num_candidate_phrases]
-                self._5w1h_phrases[question_type] = [ candidate_phrase.get_parts_as_text() for candidate_phrase in candidate_phrases ]
-        return self._5w1h_phrases
+                self.wh_phrases[question_type] = [ candidate_phrase.get_parts_as_text() for candidate_phrase in candidate_phrases ]
+        return self.wh_phrases

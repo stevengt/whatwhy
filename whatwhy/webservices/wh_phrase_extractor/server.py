@@ -1,8 +1,9 @@
 """
-This is a server to wrap some of the functionality of Giveme5W1H.
+This is a server to wrap some of the functionality of Giveme5W1H:
+https://github.com/fhamborg/Giveme5W1H
 
-To get the 5W1H ("who", "what", "when", "where", "why", "how") phrases
-from text segments, send a POST request to the server endpoint /get-5w1h-phrases
+To get the WH-phrases ("who", "what", "when", "where", "why", "how")
+from text segments, send a POST request to the server endpoint /get-wh-phrases
 with a JSON body formatted as follows:
 
     Request Format:
@@ -11,27 +12,27 @@ with a JSON body formatted as follows:
                               into batches of the requested size to be processed as a single text segment.
                               This may speed up execution time but result in a loss of accuracy.
         - "max-num-candidate-phrases" : (Optional) This specifies the maximum number of phrases to
-                                        return for each 5W1H word.
+                                        return for each WH-word.
 
     Response Format:
         - The response will be an array of objects with the following fields,
           each corresponding to the results of one text segment batch:
             - "id's"        : An array of the ID's of all text segments in the batch.
-            - "5w1h-phrases": An object with the following fields, each of which contain an array
-                              of candidate phrases for the corresponding 5W1H word:
+            - "wh-phrases": An object with the following fields, each of which contain an array
+                              of candidate phrases for the corresponding WH-word:
                                 -"who", "what", "when", "where", "why", "how"
 """
 
 import argparse
 from flask import Flask
-from .request_handlers import Get5W1HPhrasesRequestHandler
+from .request_handlers import GetWHPhrasesRequestHandler
 
 app = Flask(__name__)
 app.config["corenlp_server_url"] = None
 
-@app.route('/get-5w1h-phrases', methods=['POST'])
-def get_5w1h_phrases():
-    return Get5W1HPhrasesRequestHandler().get_response()
+@app.route('/get-wh-phrases', methods=['POST'])
+def get_wh_phrases():
+    return GetWHPhrasesRequestHandler().get_response()
 
 def main():
     parser = argparse.ArgumentParser()

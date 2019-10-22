@@ -1,6 +1,6 @@
 from flask import request
 from werkzeug.exceptions import BadRequest
-from whatwhy.services.giveme5w1h_proxy_server.text_processing import TextSegment
+from whatwhy.webservices.wh_phrase_extractor.text_processing import TextSegment
 
 class RequestParams():
 
@@ -8,11 +8,11 @@ class RequestParams():
     def get_current_request_params(cls, request_type=None):
         instance = cls()
         params_dict = request.get_json(force=True)
-        if request_type == "get-5w1h-phrases":
-            instance.initialize_get_5w1h_phrases_request_params(params_dict)
+        if request_type == "get-wh-phrases":
+            instance.initialize_get_wh_phrases_request_params(params_dict)
         return instance
 
-    def initialize_get_5w1h_phrases_request_params(self, params_dict):
+    def initialize_get_wh_phrases_request_params(self, params_dict):
         batch_size = params_dict.get("batch-size")
         self.batch_size = batch_size if batch_size is not None else 1
 
