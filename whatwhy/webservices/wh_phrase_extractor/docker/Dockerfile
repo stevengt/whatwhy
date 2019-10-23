@@ -11,4 +11,4 @@ EXPOSE 9099
 WORKDIR /opt/whatwhy
 COPY . .
 RUN pip install .
-CMD giveme5w1h-proxy-server --core-nlp-server-host $CORE_NLP_SERVER_HOST
+CMD wh-phrase-extractor-server --core-nlp-server-host $CORE_NLP_SERVER_HOST

@@ -1,10 +1,10 @@
 version: "3.4"
 services:
-    giveme5w1h-proxy-service:
+    wh-phrase-extractor-service:
         build: .
-        image: giveme5w1h-proxy
+        image: wh-phrase-extractor
         networks:
-            - giveme5w1h-proxy-network
+            - wh-phrase-extractor-network
         ports:
             - 9099:9099
         environment:
@@ -16,7 +16,7 @@ services:
     corenlp-service:
         image: nlpbox/corenlp:3.8.0
         networks:
-            - giveme5w1h-proxy-network
+            - wh-phrase-extractor-network
         ports:
             - 9000:9000
         command: java -Xms2g -Xmx3g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer --timeout 15000 --preload "tokenize,ssplit,pos,lemma,parse,ner,depparse,mention,coref"
@@ -31,5 +31,5 @@ services:
             restart_policy:
                 condition: any
 networks:
-    giveme5w1h-proxy-network:
+    wh-phrase-extractor-network:
         driver: overlay

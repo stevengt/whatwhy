@@ -1,0 +1,39 @@
+version: "3.4"
+services:
+    opener-language-identifier:
+        image: cwolff/opener-docker-language-identifier
+        networks:
+            - opener-network
+    opener-tokenizer:
+        image: cwolff/opener-docker-tokenizer
+        networks:
+            - opener-network
+    opener-pos-tagger:
+        image: cwolff/opener-docker-pos-tagger
+        networks:
+            - opener-network
+    opener-constituent-parser:
+        image: devkws/opener-docker-constituent-parser
+        networks:
+            - opener-network
+    opener-ner:
+        image: cwolff/opener-docker-ner
+        networks:
+            - opener-network
+    opener-polarity-tagger:
+        image: devkws/opener-docker-polarity-tagger
+        networks:
+            - opener-network
+    opener-opinion-detector-basic:
+        image: devkws/opener-docker-opinion-detector-basic
+        networks:
+            - opener-network
+    opener-wrapper: 
+        image: devkws/opener-docker-wrapper
+        networks:
+            - opener-network
+        ports:
+            - 9999:80 
+networks:
+    opener-network:
+        driver: overlay
