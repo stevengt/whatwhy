@@ -47,6 +47,8 @@ remove-wh-phrase-extractor-from-swarm:
 	docker stack rm wh-phrase-extractor-cluster
 
 clean:
+	find . -name "*.py[cod]" -delete
+	find . -name "*__pycache__" -delete
 	docker container prune
 	docker image prune --all
 
