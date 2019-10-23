@@ -5,7 +5,7 @@ import numpy as np
 from twython import Twython
 
 
-class TwitterManager():
+class TwitterClient():
     """Helper class to retrieve tweet texts given a list of tweet ID's using the Twitter API."""
 
     def __init__(self,
