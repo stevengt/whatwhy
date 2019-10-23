@@ -1,3 +1,17 @@
+"""
+Client for extracting the WH-phrases ('who', 'what', 'when', 'where', 'why', 'how')
+from raw text.
+
+This client requires the URL of a deployed instance of the
+WHPhraseExtractorServer, which is assumed to be at http://localhost:9099 by default.
+
+The client/server in this package serve as a wrapper around some of the
+functionality of Giveme5W1H: https://github.com/fhamborg/Giveme5W1H
+
+Additionally, this package enables "batch" processing by concatenating
+multiple text-segments and processing them as a single text-segment.
+"""
+
 import logging
 import json
 import requests
@@ -5,15 +19,8 @@ from whatwhy import QUESTION_WORDS
 
 REQUEST_TIMEOUT_IN_SECONDS = 5
 
-class FiveWOneHExtractor():
-    """
-    Class for extracting the 5w1h phrases ('who', 'what', 'when', 'where', 'why', 'how')
-    from raw text.
+class WHPhraseExtractorClient():
 
-    This class requires access to a Giveme5W1H REST API endpoint (see
-    https://github.com/fhamborg/Giveme5W1H for more details). This is assumed to be
-    at http://localhost:9099/extract by default.
-    """
 
     def __init__(self, server_url="http://localhost:9099/extract"):
         self.server_url = server_url

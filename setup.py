@@ -11,7 +11,7 @@ setuptools.setup(
     python_requires='>=3.7',
     entry_points={
         "console_scripts": [
-            "giveme5w1h-proxy-server = whatwhy.services.giveme5w1h_proxy_server.giveme5w1h_proxy_server:main"
+            "wh-phrase-extractor-server = whatwhy.webservices.wh_phrase_extractor.server:main"
         ]
     }
 )
