@@ -38,6 +38,9 @@ stop-opinion-word-extractor:
 init-swarm:
 	docker swarm init --advertise-addr $$(hostname -I | awk '{print $$1}')
 
+init-local-swarm:
+	docker swarm init --advertise-addr 127.0.0.1
+
 leave-swarm:
 	docker swarm leave --force
 
