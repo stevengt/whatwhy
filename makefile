@@ -52,5 +52,6 @@ clean:
 	find . -name "*__pycache__" -delete
 	docker container prune
 	docker image prune --all
+	docker network prune
 
 default: build-wh-phrase-extractor
