@@ -1,7 +1,9 @@
 version: "3.4"
 services:
     wh-phrase-extractor-service:
-        build: .
+        build:
+            context: ${WHATWHY_ROOT_DIR}
+            dockerfile: ${WH_PHRASE_EXTRACTOR_DOCKER_FILE}
         image: wh-phrase-extractor
         networks:
             - wh-phrase-extractor-network
