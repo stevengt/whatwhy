@@ -17,10 +17,11 @@ export OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE=whatwhy/webservices/opinion_wo
 		clean
 
 build-wh-phrase-extractor:
+	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} pull corenlp-service
 	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} build --parallel
 
 build-opinion-word-extractor:
-	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} build --parallel
+	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} pull
 
 start-wh-phrase-extractor:
 	docker-compose up ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE}
