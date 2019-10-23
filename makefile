@@ -24,16 +24,16 @@ build-opinion-word-extractor:
 	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} pull
 
 start-wh-phrase-extractor:
-	docker-compose up ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE}
+	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} up
 
 start-opinion-word-extractor:
-	docker-compose up ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE}
+	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} up
 
 stop-wh-phrase-extractor:
-	docker-compose down ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE}
+	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} down
 
 stop-opinion-word-extractor:
-	docker-compose down ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE}
+	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} down
 
 init-swarm:
 	docker swarm init --advertise-addr $$(hostname -I | awk '{print $$1}')
