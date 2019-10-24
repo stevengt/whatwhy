@@ -51,8 +51,8 @@ remove-wh-phrase-extractor-from-swarm:
 	docker stack rm wh-phrase-extractor-cluster
 
 show-server-logs:
-	docker service logs wh-phrase-extractor-cluster_wh-phrase-extractor-service
 	docker service logs wh-phrase-extractor-cluster_corenlp-service
+	docker service logs wh-phrase-extractor-cluster_wh-phrase-extractor-service
 
 clean:
 	find . -name "*.py[cod]" -delete

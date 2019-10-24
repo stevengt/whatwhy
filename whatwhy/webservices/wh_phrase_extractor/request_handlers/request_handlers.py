@@ -33,7 +33,9 @@ class GetWHPhrasesRequestHandler(RequestHandlerBase):
         for i, text_segment in enumerate(text_segments):
             cur_batch_segments.append(text_segment)
             if len(cur_batch_segments) >= batch_size or i == len(text_segments) - 1:
-                batch_processor = TextSegmentBatchProcessor.from_text_segments_and_extractor( cur_batch_segments, self.wh_phrase_extractor )
+                batch_processor = TextSegmentBatchProcessor( text_segments=cur_batch_segments,
+                                                             extractor=self.wh_phrase_extractor,
+                                                             max_num_candidate_phrases=self.request_params.max_num_candidate_phrases )
                 batch_processors.append(batch_processor)
                 cur_batch_segments = []
         return batch_processors
@@ -41,13 +43,9 @@ class GetWHPhrasesRequestHandler(RequestHandlerBase):
     def get_response(self):
         try:
             batch_results = []
-            max_num_candidate_phrases = self.request_params.max_num_candidate_phrases
             for batch_processor in self.text_segment_batch_processors:
-                cur_batch_results = {
-                    "id's" : batch_processor.get_text_segment_ids(),
-                    "wh-phrases" : batch_processor.get_wh_phrases( max_num_candidate_phrases=max_num_candidate_phrases )
-                }
-                batch_results.append(cur_batch_results)
+                cur_batch_results = batch_processor.get_results()
+                batch_results.append( cur_batch_results.as_dict() )
             return jsonify(batch_results)
         except Exception as e:
             raise http_exceptions.InternalServerError(e)

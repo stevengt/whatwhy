@@ -1,1 +1,1 @@
-from .text_processing import TextSegment, TextSegmentBatch, TextSegmentBatchProcessor
+from .text_processing import TextSegment, TextSegmentBatch, TextSegmentBatchResults, TextSegmentBatchProcessor
