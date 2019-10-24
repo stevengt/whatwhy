@@ -18,19 +18,19 @@ from .logger import logger
 from .text_processing import TextSegment, TextSegmentBatchResults
 from whatwhy import QUESTION_WORDS
 
-REQUEST_TIMEOUT_IN_SECONDS = 5
-
 class WHPhraseExtractorClient():
 
 
     def __init__( self,
                   server_url="http://localhost:9099",
                   batch_size=1,
-                  max_num_candidate_phrases=1 ):
+                  max_num_candidate_phrases=1,
+                  request_timeout_in_seconds=5 ):
 
         self.api_endpoint_url = f"{server_url}/get-wh-phrases"
         self.batch_size = batch_size
         self.max_num_candidate_phrases = max_num_candidate_phrases
+        self.request_timeout_in_seconds = request_timeout_in_seconds
 
     def get_request_body_json(self, text_segments):
         json_fields = {
@@ -48,7 +48,7 @@ class WHPhraseExtractorClient():
         results = []
         try:
             request_body = self.get_request_body_json(text_segments)
-            response = requests.post( self.api_endpoint_url, data=request_body, timeout=REQUEST_TIMEOUT_IN_SECONDS )
+            response = requests.post( self.api_endpoint_url, data=request_body, timeout=self.request_timeout_in_seconds )
             if response.ok:
                 results_as_dict = json.loads( response.content, encoding="utf-8", strict=True )
                 results = [ TextSegmentBatchResults(result["id's"], result["wh-phrases"]) for result in results_as_dict ]
