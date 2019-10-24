@@ -1,5 +1,6 @@
 
 from flask import current_app, jsonify
+import werkzeug.exceptions as http_exceptions
 from Giveme5W1H.extractor.preprocessors.preprocessor_core_nlp import Preprocessor
 from Giveme5W1H.extractor.extractor import MasterExtractor
 from .request_params import RequestParams
@@ -9,11 +10,15 @@ def get_giveme5w1h_extractor():
     extractor_preprocessor = Preprocessor(current_app.config["corenlp_server_url"])
     return MasterExtractor(preprocessor=extractor_preprocessor)
 
-class RequestHandler():
+class RequestHandlerBase():
+    
     def __init__(self, request_type):
         self.request_params = RequestParams.get_current_request_params(request_type)
 
-class GetWHPhrasesRequestHandler(RequestHandler):
+    def get_response(self):
+        raise http_exceptions.NotImplemented()
+
+class GetWHPhrasesRequestHandler(RequestHandlerBase):
 
     def __init__(self):
         super().__init__(request_type="get-wh-phrases")
@@ -34,12 +39,15 @@ class GetWHPhrasesRequestHandler(RequestHandler):
         return batch_processors
 
     def get_response(self):
-        batch_results = []
-        max_num_candidate_phrases = self.request_params.max_num_candidate_phrases
-        for batch_processor in self.text_segment_batch_processors:
-            cur_batch_results = {
-                "id's" : batch_processor.get_text_segment_ids(),
-                "wh-phrases" : batch_processor.get_wh_phrases( max_num_candidate_phrases=max_num_candidate_phrases )
-            }
-            batch_results.append(cur_batch_results)
-        return jsonify(batch_results)
+        try:
+            batch_results = []
+            max_num_candidate_phrases = self.request_params.max_num_candidate_phrases
+            for batch_processor in self.text_segment_batch_processors:
+                cur_batch_results = {
+                    "id's" : batch_processor.get_text_segment_ids(),
+                    "wh-phrases" : batch_processor.get_wh_phrases( max_num_candidate_phrases=max_num_candidate_phrases )
+                }
+                batch_results.append(cur_batch_results)
+            return jsonify(batch_results)
+        except Exception as e:
+            raise http_exceptions.InternalServerError(e)
