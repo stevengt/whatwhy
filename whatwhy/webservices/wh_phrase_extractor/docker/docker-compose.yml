@@ -5,20 +5,12 @@ services:
             context: ${WHATWHY_ROOT_DIR}
             dockerfile: ${WH_PHRASE_EXTRACTOR_DOCKER_FILE}
         image: wh-phrase-extractor
-        networks:
-            - wh-phrase-extractor-network
         ports:
             - 9099:9099
         environment:
             - CORE_NLP_SERVER_HOST=corenlp-service
-        deploy:
-            replicas: 1
-            restart_policy:
-                condition: any
     corenlp-service:
         image: nlpbox/corenlp:3.8.0
-        networks:
-            - wh-phrase-extractor-network
         ports:
             - 9000:9000
         command: java -Xms3g -Xmx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer --timeout 15000 --preload "tokenize,ssplit,pos,lemma,parse,ner,depparse,mention,coref"
@@ -28,10 +20,3 @@ services:
             timeout: 15s
             retries: 3
             start_period: 2m
-        deploy:
-            replicas: 1
-            restart_policy:
-                condition: any
-networks:
-    wh-phrase-extractor-network:
-        driver: overlay
