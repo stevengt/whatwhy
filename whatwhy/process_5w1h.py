@@ -1,11 +1,12 @@
 import pickle
+import time
 import pandas as pd
 import numpy as np
 from whatwhy.webservices.wh_phrase_extractor import logger, WHPhraseExtractorClient
 from whatwhy.data_cleaner import remove_reply_tag_from_tweet_text, autocorrect_spelling_and_grammar
 
 tweets_csv_file = "/home/stevengt/Documents/code/whatwhy/Tweets/all_tweets_aggregated.csv"
-client = WHPhraseExtractorClient(request_timeout_in_seconds=1)
+client = WHPhraseExtractorClient(request_timeout_in_seconds=20)
 batch_size = 10
 
 logger.info(f"Loading dataset from {tweets_csv_file} .")
@@ -27,6 +28,7 @@ cur_batch_num = 0
 while True:
     list_of_batch_results = []
     logger.info(f"Current batch_num is {cur_batch_num}.")
+    time.sleep(15)
     try:
         for i in range(1000):
             try:
