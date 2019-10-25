@@ -8,7 +8,7 @@ tweets_csv_file = "/home/stevengt/Documents/code/whatwhy/Tweets/all_tweets_aggre
 client = WHPhraseExtractorClient(request_timeout_in_seconds=180)
 df = pd.read_csv(tweets_csv_file)
 df_shuffled_index = np.random.permutation(df.index)
-batch_size = 1000
+batch_size = 10
 
 def get_next_batch(df, df_shuffled_index, batch_size, cur_batch_num):
     start_index = batch_size * cur_batch_num
@@ -24,7 +24,7 @@ cur_batch_num = 0
 while True:
     list_of_batch_results = []
     try:
-        for i in range(10):
+        for i in range(1000):
             try:
                 cur_batch = get_next_batch(df, df_shuffled_index, batch_size, cur_batch_num)
                 cur_batch["Text"] = cur_batch["Text"].map( remove_reply_tag_from_tweet_text ) \
