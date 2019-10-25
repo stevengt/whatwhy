@@ -37,12 +37,7 @@ from flask import Flask
 from Giveme5W1H.extractor.preprocessors.preprocessor_core_nlp import Preprocessor
 from Giveme5W1H.extractor.extractor import MasterExtractor
 
-def get_giveme5w1h_extractor():
-    extractor_preprocessor = Preprocessor(current_app.config["corenlp_server_url"])
-    return MasterExtractor(preprocessor=extractor_preprocessor)
-
 app = Flask(__name__)
-app.config["wh_phrase_extractor"] = get_giveme5w1h_extractor()
 
 class WHPhraseExtractorServer():
 
@@ -63,6 +58,9 @@ class WHPhraseExtractorServer():
         corenlp_server_url = "http://{host}:{port}".format( host=core_nlp_server_host, port=core_nlp_server_port )
         app.config["corenlp_server_url"] = corenlp_server_url
         logger.info(f"Using Stanford Core NLP server at {corenlp_server_url}")
+
+    extractor_preprocessor = Preprocessor(app.config["corenlp_server_url"])
+    app.config["wh_phrase_extractor"] = MasterExtractor(preprocessor=extractor_preprocessor)
 
     def run(self):
         logger.info(f"Starting server on {self.ip_address}:{self.port}")
