@@ -1,14 +1,9 @@
 
 from flask import current_app, jsonify
 import werkzeug.exceptions as http_exceptions
-from Giveme5W1H.extractor.preprocessors.preprocessor_core_nlp import Preprocessor
-from Giveme5W1H.extractor.extractor import MasterExtractor
 from .request_params import RequestParams
 from whatwhy.webservices.wh_phrase_extractor.text_processing import TextSegmentBatchProcessor
 
-def get_giveme5w1h_extractor():
-    extractor_preprocessor = Preprocessor(current_app.config["corenlp_server_url"])
-    return MasterExtractor(preprocessor=extractor_preprocessor)
 
 class RequestHandlerBase():
     
@@ -22,7 +17,7 @@ class GetWHPhrasesRequestHandler(RequestHandlerBase):
 
     def __init__(self):
         super().__init__(request_type="get-wh-phrases")
-        self.wh_phrase_extractor = get_giveme5w1h_extractor()
+        self.wh_phrase_extractor = current_app.config["wh_phrase_extractor"]
         self.text_segment_batch_processors = self.get_text_segment_batch_processors()
 
     def get_text_segment_batch_processors(self):

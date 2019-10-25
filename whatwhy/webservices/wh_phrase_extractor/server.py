@@ -34,8 +34,15 @@ from .logger import logger
 from .request_handlers import GetWHPhrasesRequestHandler
 import argparse
 from flask import Flask
+from Giveme5W1H.extractor.preprocessors.preprocessor_core_nlp import Preprocessor
+from Giveme5W1H.extractor.extractor import MasterExtractor
+
+def get_giveme5w1h_extractor():
+    extractor_preprocessor = Preprocessor(current_app.config["corenlp_server_url"])
+    return MasterExtractor(preprocessor=extractor_preprocessor)
 
 app = Flask(__name__)
+app.config["wh_phrase_extractor"] = get_giveme5w1h_extractor()
 
 class WHPhraseExtractorServer():
 
