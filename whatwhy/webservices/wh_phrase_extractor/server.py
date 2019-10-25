@@ -59,8 +59,8 @@ class WHPhraseExtractorServer():
         app.config["corenlp_server_url"] = corenlp_server_url
         logger.info(f"Using Stanford Core NLP server at {corenlp_server_url}")
 
-    extractor_preprocessor = Preprocessor(app.config["corenlp_server_url"])
-    app.config["wh_phrase_extractor"] = MasterExtractor(preprocessor=extractor_preprocessor)
+        extractor_preprocessor = Preprocessor(corenlp_server_url)
+        app.config["wh_phrase_extractor"] = MasterExtractor(preprocessor=extractor_preprocessor)
 
     def run(self):
         logger.info(f"Starting server on {self.ip_address}:{self.port}")
