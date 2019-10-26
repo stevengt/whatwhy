@@ -9,6 +9,7 @@ setup(
     author_email="stevent3115@gmail.com",
     python_requires='>=3.7',
     install_requires=[
+        "boto3 >= 1.10.2",
         "dask >= 2.6.0",
         "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-2.2.0/en_core_web_sm-2.2.0.tar.gz",
         "Flask >= 1.1.1",
@@ -23,7 +24,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "wh-phrase-extractor-server = whatwhy.webservices.wh_phrase_extractor.server:main"
+            "wh-phrase-extractor = whatwhy.text_processing.wh_phrases.batch_processor:main"
         ]
     }
 )

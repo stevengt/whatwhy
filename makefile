@@ -1,25 +1,25 @@
 
 export WHATWHY_ROOT_DIR=${PWD}
-export WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE=whatwhy/webservices/wh_phrase_extractor/docker/docker-compose.yml
-export WH_PHRASE_EXTRACTOR_DOCKER_FILE=whatwhy/webservices/wh_phrase_extractor/docker/Dockerfile
+export WH_PHRASE_EXTRACTOR_DOCKER_FILE=whatwhy/text_processing/wh_phrases/Dockerfile
 export OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE=whatwhy/webservices/opinion_word_extractor/docker/docker-compose.yml
 
 .PHONY: build \
+		run-wh-phrase-extractor \
 		start-webservices \
 		stop-webservices \
 		clean
 
 build:
-	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} pull corenlp-service
-	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} build --parallel
+	docker build --file ${WH_PHRASE_EXTRACTOR_DOCKER_FILE} -t wh-phrase-extractor
 	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} pull
 
+run-wh-phrase-extractor:
+	docker run wh-phrase-extractor
+
 start-webservices:
-	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} up -d
-	# docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} up -d
+	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} up -d
 
 stop-webservices:
-	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} down
 	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} down
 
 clean:
