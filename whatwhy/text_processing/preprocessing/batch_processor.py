@@ -23,7 +23,7 @@ class BatchPreprocessor(BatchProcessorBase):
         }
         return results
 
-    def remove_reply_tag_from_tweet_text(text):
+    def remove_reply_tag_from_tweet_text(self, text):
         if text is None or text is np.nan:
             return text
         reply_tag = re.match("@[^\s]+[\s]+", text)
@@ -32,7 +32,7 @@ class BatchPreprocessor(BatchProcessorBase):
             text = text.replace(reply_tag, "")
         return text
 
-    def autocorrect_spelling_and_grammar(text):
+    def autocorrect_spelling_and_grammar(self, text):
         try:
             return self.spelling_and_grammar_parser.parse(text)["result"]
         except:
