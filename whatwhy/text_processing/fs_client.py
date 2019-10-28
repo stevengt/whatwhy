@@ -3,7 +3,7 @@ from .text_processing import logger, BatchSourceBase, BatchDestinationBase
 
 class FileSystemBatchSource(BatchSourceBase):
 
-    def __init__(self, folder_name, delete_when_complete=False)
+    def __init__(self, folder_name, delete_when_complete=False):
         logger.info(f"Reading batches from local folder {folder_name}.")
         self.delete_when_complete = delete_when_complete
         self.folder_name = folder_name

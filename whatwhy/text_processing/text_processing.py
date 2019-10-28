@@ -1,8 +1,19 @@
 import logging
+from io import StringIO
+import csv
 import pandas as pd
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
+
+def get_csv_string_from_df(df):
+    with StringIO() as csv_stream:
+        df.to_csv(csv_stream, quoting=csv.QUOTE_ALL, quotechar='"', escapechar="\\")
+        return csv_stream.getvalue()
+
+def get_df_from_csv_string(csv_string):
+    with StringIO(csv_string) as csv_stream:
+        return pd.read_csv(csv_stream, quoting=csv.QUOTE_ALL, quotechar='"', escapechar="\\")
 
 class BatchSourceBase():
 
@@ -23,9 +34,8 @@ class BatchDestinationBase():
         for i, batch in enumerate(batches):
             try:
                 target_file_name = f"batch{i}.csv"
-                csv_string = StringIO()
-                batch.to_csv(csv_string)
-                self.publish_batch_results(csv_string.getvalue(), target_file_name=target_file_name)
+                csv_string = get_csv_string_from_df(batch))
+                self.publish_batch_results(csv_string), target_file_name=target_file_name)
             except Exception as e:
                 logger.error(f"Failed to populate batch {i}: {e}")
 

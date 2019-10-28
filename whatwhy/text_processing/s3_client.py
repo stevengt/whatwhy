@@ -3,7 +3,7 @@ from .text_processing import logger, BatchSourceBase, BatchDestinationBase
 
 class S3ClientBase():
 
-    def __init__(self, bucket_name, folder_name)
+    def __init__(self, bucket_name, folder_name):
         logger.info(f"Connecting to S3 bucket/folder '{bucket_name}/{folder_name}'.")
         self.s3 = boto3.client("s3")
         self.bucket_name = bucket_name

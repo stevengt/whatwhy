@@ -3,7 +3,7 @@ import pandas as pd
 from Giveme5W1H.extractor.document import Document
 from Giveme5W1H.extractor.extractor import MasterExtractor
 from whatwhy import QUESTION_WORDS
-from whatwhy.text_processing import BatchProcessorBase, SQSClient, S3Client
+from whatwhy.text_processing import BatchProcessorBase, SQSClient, S3Client, get_df_from_csv_string, get_csv_string_from_df
 
 class WHPhrasesBatchProcessor(BatchProcessorBase):
 
@@ -21,17 +21,15 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
             return ""
 
     def get_batch_results(self, batch):
-        batch_as_csv = StringIO(batch)
-        batch_as_df = pd.read_csv(batch_csv)
+        batch_as_df = get_df_from_csv_string(batch)
         for question_type in QUESTION_WORDS:
             batch_as_df[question_type] = batch_as_df["Text"].map( lambda text_segment : self.get_top_wh_phrase(question_type, text_segment) )
         
-        results_csv_string = StringIO()
-        batch_as_df.to_csv(results_csv_string)
+        results_csv_string = get_csv_string_from_df(batch_as_df)
 
         results = {
             "target_results_file_name" : f"{batch_as_df.index.iloc[0]}.csv",
-            "file_content" : results_csv_string.get_value()
+            "file_content" : results_csv_string
         }
         return results
 
