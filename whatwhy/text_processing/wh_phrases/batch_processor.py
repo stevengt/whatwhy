@@ -1,3 +1,4 @@
+import subprocess
 from io import StringIO
 import pandas as pd
 from Giveme5W1H.extractor.document import Document
@@ -9,6 +10,7 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
 
     def __init__(self, source, dest):
         super().__init__(source, dest)
+        self.corenlp_process = subprocess.Popen(["giveme5w1h-corenlp"])
         self.extractor = MasterExtractor()
 
     def get_top_wh_phrase(self, question_type, text_segment):
