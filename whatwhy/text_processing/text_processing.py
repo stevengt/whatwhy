@@ -25,7 +25,7 @@ class BatchDestinationBase():
                 target_file_name = f"batch{i}.csv"
                 csv_string = StringIO()
                 batch.to_csv(csv_string)
-                self.publish_batch_results(csv_string, target_file_name=target_file_name)
+                self.publish_batch_results(csv_string.getvalue(), target_file_name=target_file_name)
             except Exception as e:
                 logger.error(f"Failed to populate batch {i}: {e}")
 
