@@ -24,7 +24,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "wh-phrase-extractor = whatwhy.text_processing.wh_phrases.batch_processor:main"
+            "whatwhy = whatwhy.text_processing.main:main"
         ]
     }
 )

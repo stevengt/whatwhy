@@ -32,9 +32,9 @@ class S3BatchSource(S3ClientBase, BatchSourceBase):
             self.cur_batch_key = self.batch_iterator.__next__()["Key"]
             obj = self.s3.get_object(Bucket=self.bucket_name, Key=self.cur_batch_key)
             return obj["Body"].read().decode("utf-8")
-        except StopIteration:
-            logger.info(f"Finished reading batches from S3.")
+        except StopIteration as e:
             self.cur_batch_key = None
+            raise e
         except Exception as e:
             logger.error(f"Failed to receive batch from S3: {e}")
             return None

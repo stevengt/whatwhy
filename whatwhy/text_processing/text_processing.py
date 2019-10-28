@@ -8,12 +8,15 @@ logger = logging.getLogger(__name__)
 
 def get_csv_string_from_df(df):
     with StringIO() as csv_stream:
-        df.to_csv(csv_stream, index=False, quoting=csv.QUOTE_ALL, quotechar='"', escapechar="\\")
+        df.to_csv(csv_stream, sep="\t", index=False, quoting=csv.QUOTE_ALL, quotechar='"')
         return csv_stream.getvalue()
 
 def get_df_from_csv_string(csv_string):
     with StringIO(csv_string) as csv_stream:
-        return pd.read_csv(csv_stream, quoting=csv.QUOTE_ALL, quotechar='"', escapechar="\\")
+        return pd.read_csv(csv_stream, sep="\t", dtype=str, quoting=csv.QUOTE_ALL, quotechar='"')
+
+def get_df_from_file(file_name):
+    return pd.read_csv(file_name, sep="\t", dtype=str, quoting=csv.QUOTE_ALL, quotechar='"')
 
 class BatchSourceBase():
 
@@ -61,5 +64,8 @@ class BatchProcessorBase():
                 target_file_name = batch_results["target_results_file_name"]
                 self.dest.publish_batch_results(results_file_content, target_file_name)
                 self.source.mark_batch_as_complete()
+            except StopIteration:
+                logger.info(f"Finished reading batches from source.")
+                break
             except Exception as e:
                 logger.error(e)

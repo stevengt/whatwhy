@@ -15,9 +15,9 @@ class FileSystemBatchSource(BatchSourceBase):
             self.cur_batch_file_name = os.path.join(self.folder_name, self.batch_file_names.__next__())
             with open(self.cur_batch_file_name) as batch_file:
                 return batch_file.read()
-        except StopIteration:
-            logger.info(f"Finished reading batches from local folder {self.folder_name}.")
+        except StopIteration as e:
             self.cur_batch_file_name = None
+            raise e
         except Exception as e:
             logger.error(f"Failed to receive batch from local folder: {e}")
 

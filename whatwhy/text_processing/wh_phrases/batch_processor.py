@@ -3,14 +3,13 @@ import pandas as pd
 from Giveme5W1H.extractor.document import Document
 from Giveme5W1H.extractor.extractor import MasterExtractor
 from whatwhy import QUESTION_WORDS
-from whatwhy.text_processing import BatchProcessorBase, SQSClient, S3Client, get_df_from_csv_string, get_csv_string_from_df
+from whatwhy.text_processing import BatchProcessorBase, get_df_from_csv_string, get_csv_string_from_df
 
 class WHPhrasesBatchProcessor(BatchProcessorBase):
 
-    def __init__(self):
+    def __init__(self, source, dest):
+        super().__init__(source, dest)
         self.extractor = MasterExtractor()
-        self.source = SQSClient(queue_name="whatwhy-processing")
-        self.dest = S3Client(bucket_name="whatwhy-data", folder_name="batch-results")
 
     def get_top_wh_phrase(self, question_type, text_segment):
         doc = Document.from_text(text_segment)
@@ -32,11 +31,3 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
             "file_content" : results_csv_string
         }
         return results
-
-def main():
-    corenlp_process = Popen(["giveme5w1h-corenlp"])
-    batch_processor = WHPhrasesBatchProcessor()
-    batch_processor.run()
-
-if __name__ == "__main__":
-    main()
