@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 def get_csv_string_from_df(df):
     with StringIO() as csv_stream:
-        df.to_csv(csv_stream, quoting=csv.QUOTE_ALL, quotechar='"', escapechar="\\")
+        df.to_csv(csv_stream, index=False, quoting=csv.QUOTE_ALL, quotechar='"', escapechar="\\")
         return csv_stream.getvalue()
 
 def get_df_from_csv_string(csv_string):
