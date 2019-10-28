@@ -3,6 +3,7 @@ from .text_processing import get_df_from_file
 from .fs_client import FileSystemBatchSource, FileSystemBatchDestination
 from .s3_client import S3BatchSource, S3BatchDestination
 from .sqs_client import SQSBatchSource, SQSBatchDestination
+from .batch_transfer import BatchTransferer
 from .preprocessing import BatchPreprocessor
 from .wh_phrases import WHPhrasesBatchProcessor
 
@@ -33,6 +34,8 @@ def get_batch_processor(batch_processor_type, batch_source, batch_dest):
         return BatchPreprocessor(batch_source, batch_dest)
     elif batch_processor_type == "wh-phrases":
         return WHPhrasesBatchProcessor(batch_source, batch_dest)
+    elif batch_processor_type == "transfer":
+        return BatchTransferer(batch_source, batch_dest)
     else:
         raise AttributeError(f"Unsupported batch processor type {batch_processor_type}.")
 
@@ -48,7 +51,7 @@ def main():
 
     arggroup = parser.add_mutually_exclusive_group(required=True)
     arggroup.add_argument("--populate", action="store_true")
-    arggroup.add_argument("--process", choices=["preprocessing", "wh-phrases"] )
+    arggroup.add_argument("--process", choices=["preprocessing", "wh-phrases", "transfer"] )
 
     parser.add_argument("--source-type", choices=["fs", "s3", "sqs"], required=True)
     parser.add_argument("--source-name", required=True, help="If using S3, use the format bucket-name/folder-name.")
