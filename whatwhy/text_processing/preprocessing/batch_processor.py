@@ -18,7 +18,7 @@ class BatchPreprocessor(BatchProcessorBase):
         results_csv_string = get_csv_string_from_df(results_df)
 
         results = {
-            "target_results_file_name" : f"batch{batch_as_df.index.iloc[0]}.csv",
+            "target_results_file_name" : f"batch{batch_as_df.index[0]}.csv",
             "file_content" : results_csv_string
         }
         return results
