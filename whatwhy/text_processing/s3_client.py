@@ -19,7 +19,7 @@ class S3BatchSource(S3ClientBase, BatchSourceBase):
     at the time of instantiation, and deletes them as they are processed.
     """
 
-    def __init__(self, bucket_name, folder_name, delete_when_complete=True):
+    def __init__(self, bucket_name, folder_name, delete_when_complete=False):
         super().__init__(bucket_name, folder_name)
         self.delete_when_complete = delete_when_complete
         bucket_objects = self.s3.list_objects(Bucket=self.bucket_name, Prefix=self.folder_name)["Contents"]
