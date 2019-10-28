@@ -31,7 +31,10 @@ class FileSystemBatchSource(BatchSourceBase):
 class FileSystemBatchDestination(BatchDestinationBase):
 
     def __init__(self, folder_name):
+        logger.info(f"Writing batches to local folder {folder_name}.")
         self.folder_name = folder_name
+        if not os.path.exists(folder_name):
+            os.mkdir(folder_name)
 
     def publish_batch_results(self, results, target_file_name):
         target_file_name = os.path.join(self.folder_name, target_file_name)
