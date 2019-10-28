@@ -9,6 +9,6 @@ class BatchTransferer(BatchProcessorBase):
         batch_as_df = get_df_from_csv_string(batch)
         results = {
             "target_results_file_name" : f"batch{batch_as_df.index[0]}.csv",
-            "file_content" : results_csv_string
+            "file_content" : batch
         }
-        return batch
+        return results
