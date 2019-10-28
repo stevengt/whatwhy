@@ -34,7 +34,7 @@ class BatchDestinationBase():
         for i, batch in enumerate(batches):
             try:
                 target_file_name = f"batch{i}.csv"
-                csv_string = get_csv_string_from_df(batch))
+                csv_string = get_csv_string_from_df(batch)
                 self.publish_batch_results(csv_string), target_file_name=target_file_name)
             except Exception as e:
                 logger.error(f"Failed to populate batch {i}: {e}")
