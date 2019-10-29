@@ -10,3 +10,6 @@
 
 # Raw files containing tweet ID's and text.
 Tweets/
+
+# Downloaded resources, e.g., lanugage model binaries.
+resources/

@@ -8,8 +8,8 @@ from whatwhy.text_processing import BatchProcessorBase, get_df_from_csv_string, 
 
 class WHPhrasesBatchProcessor(BatchProcessorBase):
 
-    def __init__(self, source, dest):
-        super().__init__(source, dest)
+    def __init__(self, source, dest, source_col_name="Preprocessed Text", id_col_name="Tweet ID"):
+        super().__init__(source, dest, source_col_name=source_col_name, id_col_name=id_col_name)
         self.corenlp_process = subprocess.Popen(["giveme5w1h-corenlp"])
         self.extractor = MasterExtractor()
 
@@ -24,9 +24,12 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
     def get_batch_results(self, batch):
         batch_as_df = get_df_from_csv_string(batch)
         for question_type in QUESTION_WORDS:
-            batch_as_df[question_type] = batch_as_df["Text"].map( lambda text_segment : self.get_top_wh_phrase(question_type, text_segment) )
+            batch_as_df[question_type] = batch_as_df[self.source_col_name].map( lambda text_segment : self.get_top_wh_phrase(question_type, text_segment) )
         
-        results_csv_string = get_csv_string_from_df(batch_as_df)
+        results_df_cols = [self.id_col_name]
+        results_df_cols.extend(QUESTION_WORDS)
+        results_df = batch_as_df[results_df_cols]
+        results_csv_string = get_csv_string_from_df(results_df)
 
         results = {
             "target_results_file_name" : f"{batch_as_df.index[0]}.csv",
