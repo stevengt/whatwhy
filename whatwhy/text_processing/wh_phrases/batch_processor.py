@@ -17,7 +17,7 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
         super().__init__(source=source,
                             dest=dest,
                             id_col_name=id_col_name,
-                            source_col_name=source_col_name
+                            source_col_name=source_col_name,
                             include_cols=include_cols)
 
         self.corenlp_process = subprocess.Popen(["giveme5w1h-corenlp"])
