@@ -1,4 +1,5 @@
-from .text_processing import BatchProcessorBase, get_df_from_csv_string
+from whatwhy.text_processing.batch_processors import BatchProcessorBase
+from whatwhy.text_processing.helper_methods import get_df_from_csv_string
 
 class BatchTransferer(BatchProcessorBase):
 

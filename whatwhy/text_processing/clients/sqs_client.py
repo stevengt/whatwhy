@@ -1,9 +1,9 @@
 import boto3
-from .text_processing import logger, BatchSourceBase, BatchDestinationBase
+from .client import logger, BatchSourceBase, BatchDestinationBase
 
 class SQSClientBase():
 
-    def __init__(self, queue_name, region_name="us-east-2"):
+    def __init__(self, queue_name, region_name="us-east-1"):
         logger.info(f"Connecting to SQS queue with name '{queue_name}' in region '{region_name}'.")
         self.sqs = boto3.client("sqs", region_name=region_name)
         self.queue_name = queue_name
@@ -15,7 +15,7 @@ class SQSBatchSource(SQSClientBase, BatchSourceBase):
     Each instance of this class should only have ONE consumer.
     """
     
-    def __init__(self, queue_name, region_name="us-east-2"):
+    def __init__(self, queue_name, region_name="us-east-1"):
         super().__init__(queue_name, region_name)
         self.message = None
 
@@ -39,7 +39,7 @@ class SQSBatchSource(SQSClientBase, BatchSourceBase):
 
 class SQSBatchDestination(SQSClientBase, BatchDestinationBase):
 
-    def __init__(self, queue_name, region_name="us-east-2"):
+    def __init__(self, queue_name, region_name="us-east-1"):
         super().__init__(queue_name, region_name)
 
     def publish_batch_results(self, results, target_file_name=None):

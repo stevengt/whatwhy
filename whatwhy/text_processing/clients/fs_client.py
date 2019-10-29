@@ -1,5 +1,5 @@
 import os
-from .text_processing import logger, BatchSourceBase, BatchDestinationBase
+from .client import logger, BatchSourceBase, BatchDestinationBase
 
 class FileSystemBatchSource(BatchSourceBase):
 

@@ -1,11 +1,7 @@
 import argparse
-from .text_processing import get_df_from_file
-from .fs_client import FileSystemBatchSource, FileSystemBatchDestination
-from .s3_client import S3BatchSource, S3BatchDestination
-from .sqs_client import SQSBatchSource, SQSBatchDestination
-from .batch_transfer import BatchTransferer
-from .preprocessing import BatchPreprocessor
-from .wh_phrases import WHPhrasesBatchProcessor
+from .helper_methods import get_df_from_file
+from .clients import FileSystemBatchSource, FileSystemBatchDestination, S3BatchSource, S3BatchDestination, SQSBatchSource, SQSBatchDestination
+from .batch_processors import BatchTransferer, BatchPreprocessor, WHPhrasesBatchProcessor
 
 def get_batch_source(source_type, source_name, delete_when_complete):
     if source_type == "fs":

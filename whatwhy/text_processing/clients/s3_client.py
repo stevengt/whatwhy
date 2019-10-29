@@ -1,5 +1,5 @@
 import boto3
-from .text_processing import logger, BatchSourceBase, BatchDestinationBase
+from .client import logger, BatchSourceBase, BatchDestinationBase
 
 class S3ClientBase():
 
@@ -56,7 +56,7 @@ class S3BatchDestination(S3ClientBase, BatchDestinationBase):
     def publish_batch_results(self, results, target_file_name=None):
         try:
             if target_file_name is None:
-                target_file_name = "unspecified-filename.txt"
+                raise Exception("No filename specified.")
             target_file_name = self.folder_name + target_file_name
             self.s3.put_object(Bucket=self.bucket_name, Key=target_file_name, Body=results)
         except Exception as e:

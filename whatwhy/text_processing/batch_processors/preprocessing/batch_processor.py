@@ -1,7 +1,8 @@
 import re
 import numpy as np
 from .spell_checker import get_spell_checker
-from whatwhy.text_processing import BatchProcessorBase, get_csv_string_from_df, get_df_from_csv_string
+from whatwhy.text_processing.batch_processors import BatchProcessorBase
+from whatwhy.text_processing.helper_methods import get_csv_string_from_df, get_df_from_csv_string
 
 class BatchPreprocessor(BatchProcessorBase):
 
