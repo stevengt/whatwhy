@@ -48,12 +48,18 @@ class BatchProcessorBase():
     and writes the results to a BatchDestination.
     """
 
-    def __init__(self, source, dest, source_col_name=None, dest_col_name=None, id_col_name=None):
+    def __init__(self, source,
+                       dest,
+                       id_col_name=None,
+                       source_col_name=None,
+                       dest_col_name=None,
+                       include_cols=None):
         self.source = source
         self.dest = dest
+        self.id_col_name = id_col_name
         self.source_col_name = source_col_name
         self.dest_col_name = dest_col_name
-        self.id_col_name = id_col_name
+        self.include_cols = include_cols if include_cols is not None else []
 
     def get_batch_results(self, batch):
         raise NotImplementedError()

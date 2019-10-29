@@ -40,8 +40,19 @@ def download_jamspell_language_model():
 
 class BatchPreprocessor(BatchProcessorBase):
 
-    def __init__(self, source, dest, source_col_name="Text", dest_col_name="Preprocessed Text", id_col_name="Tweet ID"):
-        super().__init__(source, dest, source_col_name, dest_col_name, id_col_name)
+    def __init__(self, source,
+                       dest,
+                       id_col_name="ID",
+                       source_col_name="Text",
+                       dest_col_name="Preprocessed Text",
+                       include_cols=["Tweet ID"]):
+
+        super().__init__(source=source,
+                            dest=dest,
+                            id_col_name=id_col_name,
+                            source_col_name=source_col_name,
+                            dest_col_name=dest_col_name,
+                            include_cols=include_cols)
         self.spell_checker = get_spell_checker()
 
     def get_batch_results(self, batch):
@@ -49,11 +60,13 @@ class BatchPreprocessor(BatchProcessorBase):
         batch_as_df[self.dest_col_name] = batch_as_df[self.source_col_name].apply( self.remove_reply_tag_from_tweet_text) \
                                                                            .apply( self.remove_url ) \
                                                                            .apply( self.autocorrect_spelling )
-        results_df = batch_as_df[[self.id_col_name, self.dest_col_name]]
+        results_df_cols = [self.id_col_name, self.dest_col_name]
+        results_df_cols.extend(self.include_cols)
+        results_df = batch_as_df[results_df_cols]
         results_csv_string = get_csv_string_from_df(results_df)
 
         results = {
-            "target_results_file_name" : f"batch{batch_as_df.index[0]}.csv",
+            "target_results_file_name" : f"batch{batch_as_df[self.id_col_name].iloc[0]}.csv",
             "file_content" : results_csv_string
         }
         return results
