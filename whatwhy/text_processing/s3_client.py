@@ -23,13 +23,14 @@ class S3BatchSource(S3ClientBase, BatchSourceBase):
         super().__init__(bucket_name, folder_name)
         self.delete_when_complete = delete_when_complete
         bucket_objects = self.s3.list_objects(Bucket=self.bucket_name, Prefix=self.folder_name)["Contents"]
-        batch_objects = [ bucket_object for bucket_object in bucket_objects if bucket_object["Key"] != self.folder_name ]
-        self.batch_iterator = iter(batch_objects)
+        batch_keys = [ bucket_object["Key"] for bucket_object in bucket_objects if bucket_object["Key"] != self.folder_name ]
+        batch_keys.sort()
+        self.batch_iterator = iter(batch_keys)
         self.cur_batch_key = None
 
     def get_next_batch(self):
         try:
-            self.cur_batch_key = self.batch_iterator.__next__()["Key"]
+            self.cur_batch_key = self.batch_iterator.__next__()
             obj = self.s3.get_object(Bucket=self.bucket_name, Key=self.cur_batch_key)
             return obj["Body"].read().decode("utf-8")
         except StopIteration as e:

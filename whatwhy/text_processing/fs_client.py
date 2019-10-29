@@ -7,7 +7,9 @@ class FileSystemBatchSource(BatchSourceBase):
         logger.info(f"Reading batches from local folder {folder_name}.")
         self.delete_when_complete = delete_when_complete
         self.folder_name = folder_name
-        self.batch_file_names = iter(os.listdir(folder_name))
+        batch_file_names = os.listdir(folder_name)
+        batch_file_names.sort()
+        self.batch_file_names = iter(batch_file_names)
         self.cur_batch_file_name = None
 
     def get_next_batch(self):
