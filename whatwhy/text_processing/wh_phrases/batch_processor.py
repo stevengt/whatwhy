@@ -12,7 +12,7 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
                        dest,
                        id_col_name="ID",
                        source_col_name="Preprocessed Text",
-                       include_cols=["Tweet ID"])
+                       include_cols=["Tweet ID"]):
 
         super().__init__(source=source,
                             dest=dest,
