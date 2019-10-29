@@ -1,42 +1,7 @@
-import os
 import re
-import logging
-import tarfile
 import numpy as np
-import requests
-import jamspell
-from whatwhy import RESOURCES_FOLDER
+from .spell_checker import get_spell_checker
 from whatwhy.text_processing import BatchProcessorBase, get_csv_string_from_df, get_df_from_csv_string
-
-logger = logging.getLogger(__name__)
-
-def get_spell_checker():
-    model_file_name = os.path.join(RESOURCES_FOLDER, "jamspell", "en.bin")
-    if not os.path.exists(model_file_name):
-        download_jamspell_language_model()
-    spell_checker = jamspell.TSpellCorrector()
-    spell_checker.LoadLangModel(model_file_name)
-    return spell_checker
-
-def download_jamspell_language_model():
-    logger.info("Downloading jamspell language model")
-    if not os.path.isdir(RESOURCES_FOLDER):
-        os.mkdir(RESOURCES_FOLDER)
-
-    target_dir_name = os.path.join(RESOURCES_FOLDER, "jamspell")
-    os.mkdir(target_dir_name)
-
-    model_url = "https://github.com/bakwc/JamSpell-models/raw/master/en.tar.gz"
-    with requests.get(model_url, stream=True) as compressed_model:
-
-        tar_file_name = os.path.join(target_dir_name, "en.tar.gz")
-        with open(tar_file_name, "wb") as tar_file:
-            tar_file.write(compressed_model.content)
-
-        with tarfile.open(tar_file_name) as tar_file:
-            tar_file.extractall(path=target_dir_name)
-
-        os.remove(tar_file_name)
 
 class BatchPreprocessor(BatchProcessorBase):
 
