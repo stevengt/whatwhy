@@ -7,7 +7,7 @@ setup(
     url="https://github.com/stevengt/whatwhy",
     author="Steven Thomas",
     author_email="stevent3115@gmail.com",
-    python_requires='>=3.7',
+    python_requires='>=3.6',
     install_requires=[
         "boto3 >= 1.10.2",
         "dask >= 2.6.0",

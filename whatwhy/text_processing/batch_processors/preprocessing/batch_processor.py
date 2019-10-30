@@ -38,20 +38,30 @@ class BatchPreprocessor(BatchProcessorBase):
         return results
 
     def remove_url(self, text):
-        url_regex = r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))'''
-        text = re.sub(url_regex, "", text, flags=re.MULTILINE) 
-        return text 
+        if text is None or text is np.nan:
+            return text
+        try:
+            url_regex = r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))'''
+            text = re.sub(url_regex, "", text, flags=re.MULTILINE) 
+            return text 
+        except:
+            return text
 
     def remove_reply_tag_from_tweet_text(self, text):
         if text is None or text is np.nan:
             return text
-        reply_tag = re.match("@[^\s]+[\s]+", text)
-        if reply_tag is not None:
-            reply_tag = reply_tag.group(0)
-            text = text.replace(reply_tag, "")
-        return text
+        try:
+            reply_tag = re.match("@[^\s]+[\s]+", text)
+            if reply_tag is not None:
+                reply_tag = reply_tag.group(0)
+                text = text.replace(reply_tag, "")
+            return text
+        except:
+            return text
 
     def autocorrect_spelling(self, text):
+        if text is None or text is np.nan:
+            return text    
         try:
             return self.spell_checker.FixFragment(text)
         except:
