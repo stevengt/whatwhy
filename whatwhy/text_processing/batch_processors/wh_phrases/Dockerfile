@@ -25,8 +25,17 @@ ARG AWS_SECRET_ACCESS_KEY
 ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get install -y locales && \
+    echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+
 WORKDIR /opt/whatwhy
 COPY . .
 RUN pip3 install .
 
-CMD whatwhy --process 
+CMD whatwhy --process wh-phrases \
+            --source-type sqs \
+            --source-name whatwhy-wh-phrase-extraction \
+            --dest-type s3 \
+            --dest-name whatwhy-data/wh-phrases
