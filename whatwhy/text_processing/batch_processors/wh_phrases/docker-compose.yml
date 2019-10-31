@@ -1,0 +1,23 @@
+version: "3.4"
+services:
+    wh-phrase-extractor-service:
+        build:
+            context: ${WHATWHY_ROOT_DIR}
+            dockerfile: ${WH_PHRASE_EXTRACTOR_DOCKER_FILE}
+        image: wh-phrase-extractor
+        networks:
+            - wh-phrase-extractor-network
+    corenlp-service:
+        image: nlpbox/corenlp:3.8.0
+        networks:
+            - wh-phrase-extractor-network
+        command: java -Xms3g -Xmx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer --timeout 15000 --preload "tokenize,ssplit,pos,lemma,parse,ner,depparse,mention,coref"
+        healthcheck:
+            test: wget --quiet --spider --tries=1 --post-data "The quick brown fox jumped over the lazy dog." "http://localhost:9000/?properties={%22annotators%22%3A%22tokenize%2Cssplit%2Cpos%22%2C%22outputFormat%22%3A%22json%22}" || exit 1
+            interval: 30s
+            timeout: 15s
+            retries: 3
+            start_period: 2m
+networks:
+    wh-phrase-extractor-network:
+        driver: bridge

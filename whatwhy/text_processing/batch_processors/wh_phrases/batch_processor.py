@@ -1,4 +1,7 @@
 import subprocess
+from time import sleep
+import numpy as np
+from Giveme5W1H.extractor.preprocessors.preprocessor_core_nlp import Preprocessor
 from Giveme5W1H.extractor.document import Document
 from Giveme5W1H.extractor.extractor import MasterExtractor
 from whatwhy import QUESTION_WORDS
@@ -19,16 +22,19 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
                             source_col_name=source_col_name,
                             include_cols=include_cols)
 
-        self.corenlp_process = subprocess.Popen(["giveme5w1h-corenlp"])
-        self.extractor = MasterExtractor()
+        sleep(60)
+        extractor_preprocessor = Preprocessor("http://corenlp-service:9000")
+        self.extractor = MasterExtractor(preprocessor=extractor_preprocessor)
 
     def get_top_wh_phrase(self, question_type, text_segment):
-        doc = Document.from_text(text_segment)
-        doc = self.extractor.parse(doc)
+        if text_segment is None or text_segment is np.nan:
+            return None
         try:
+            doc = Document.from_text(text_segment)
+            doc = self.extractor.parse(doc)
             return doc.get_top_answer(question_type).get_parts_as_text()
         except:
-            return ""
+            return None
 
     def get_batch_results(self, batch):
         batch_as_df = get_df_from_csv_string(batch)

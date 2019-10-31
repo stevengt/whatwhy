@@ -1,6 +1,7 @@
 
 export WHATWHY_ROOT_DIR=${PWD}
 export WH_PHRASE_EXTRACTOR_DOCKER_FILE=whatwhy/text_processing/batch_processors/wh_phrases/Dockerfile
+export WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE=whatwhy/text_processing/batch_processors/wh_phrases/docker-compose.yml
 export OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE=whatwhy/webservices/opinion_word_extractor/docker/docker-compose.yml
 
 .PHONY: build \
@@ -14,10 +15,11 @@ build:
 				 --build-arg AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 				 --build-arg AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
 				 -t wh-phrase-extractor .
+	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} pull corenlp-service
 	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} pull
 
 run-wh-phrase-extractor:
-	docker run wh-phrase-extractor
+	docker-compose --file ${WH_PHRASE_EXTRACTOR_DOCKER_COMPOSE_FILE} up
 
 start-webservices:
 	docker-compose --file ${OPINION_WORD_EXTRACTOR_DOCKER_COMPOSE_FILE} up -d
