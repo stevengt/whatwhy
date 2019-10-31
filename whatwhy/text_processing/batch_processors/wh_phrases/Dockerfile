@@ -5,6 +5,7 @@ RUN apt-get update -y && \
         build-essential \
         curl \
         git \
+        procps \
         swig3.0 \
         unzip \
         wget
@@ -31,8 +32,13 @@ WORKDIR /opt/whatwhy
 COPY . .
 RUN pip install .
 
-CMD whatwhy --process wh-phrases \
-            --source-type sqs \
-            --source-name whatwhy-wh-phrase-extraction \
-            --dest-type s3 \
-            --dest-name whatwhy-data/wh-phrases
+RUN echo "whatwhy --process wh-phrases \
+                  --source-type sqs \
+                  --source-name whatwhy-wh-phrase-extraction \
+                  --dest-type s3 \
+                  --dest-name whatwhy-data/wh-phrases &" > start-whatwhy && \
+    chmod +x start-whatwhy
+RUN echo "pkill whatwhy" > stop-whatwhy && chmod +x stop-whatwhy
+RUN echo "./stop-whatwhy && ./start-whatwhy" > restart-whatwhy && chmod +x restart-whatwhy
+RUN echo "./start-whatwhy; while true; do sleep 900; ./restart-whatwhy; done" > run-whatwhy && chmod +x run-whatwhy
+CMD ./run-whatwhy
