@@ -32,7 +32,7 @@ COPY . .
 RUN pip install .
 
 CMD whatwhy --process wh-phrases \
-            --source-type s3 \
-            --source-name whatwhy-data/preprocessed1 \
+            --source-type sqs \
+            --source-name whatwhy-wh-phrase-extraction \
             --dest-type s3 \
             --dest-name whatwhy-data/wh-phrases
