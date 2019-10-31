@@ -26,21 +26,34 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
         extractor_preprocessor = Preprocessor("http://corenlp-service:9000")
         self.extractor = MasterExtractor(preprocessor=extractor_preprocessor)
 
-    def get_top_wh_phrase(self, question_type, text_segment):
-        if text_segment is None or text_segment is np.nan:
-            return None
-        try:
-            doc = Document.from_text(text_segment)
-            doc = self.extractor.parse(doc)
-            return doc.get_top_answer(question_type).get_parts_as_text()
-        except:
-            return None
+    def get_top_wh_phrases(self, text_segment):
+        top_phrases = {}
+        for question_type in QUESTION_WORDS:
+            top_phrases[question_type] = None
+
+        if text_segment is not None and text_segment is not np.nan:
+            try:
+                doc = Document.from_text(text_segment)
+                doc = self.extractor.parse(doc)
+                for question_type in QUESTION_WORDS:
+                    try:
+                        top_phrases[question_type] = doc.get_top_answer(question_type).get_parts_as_text()
+                    except:
+                        continue
+            except:
+                pass
+
+        return top_phrases
 
     def get_batch_results(self, batch):
         batch_as_df = get_df_from_csv_string(batch)
         for question_type in QUESTION_WORDS:
-            batch_as_df[question_type] = batch_as_df[self.source_col_name].map( lambda text_segment : self.get_top_wh_phrase(question_type, text_segment) )
-        
+            batch_as_df[question_type] = None
+        for i, row in batch_as_df.iterrows():
+            top_wh_phrases = self.get_top_wh_phrases(row[self.source_col_name])
+            for question_type in QUESTION_WORDS:
+                batch_as_df.at[i, question_type] = top_wh_phrases.get(question_type)
+
         results_df_cols = [self.id_col_name]
         results_df_cols.extend(QUESTION_WORDS)
         results_df_cols.extend(self.include_cols)
@@ -48,7 +61,7 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
         results_csv_string = get_csv_string_from_df(results_df)
 
         results = {
-            "target_results_file_name" : f"{batch_as_df[self.id_col_name].iloc[0]}.csv",
+            "target_results_file_name" : f"batch{batch_as_df[self.id_col_name].iloc[0]}.csv",
             "file_content" : results_csv_string
         }
         return results
