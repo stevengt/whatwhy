@@ -3,6 +3,7 @@ import numpy as np
 from Giveme5W1H.extractor.preprocessors.preprocessor_core_nlp import Preprocessor
 from Giveme5W1H.extractor.document import Document
 from Giveme5W1H.extractor.extractor import MasterExtractor
+from Giveme5W1H.extractor.extractors import action_extractor, cause_extractor, method_extractor
 from whatwhy import QUESTION_WORDS
 from whatwhy.text_processing.batch_processors import BatchProcessorBase
 from whatwhy.text_processing.helper_methods import get_df_from_csv_string, get_csv_string_from_df
@@ -23,7 +24,12 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
 
         sleep(60)
         extractor_preprocessor = Preprocessor("http://corenlp-service:9000")
-        self.extractor = MasterExtractor(preprocessor=extractor_preprocessor)
+        extractors = [
+            action_extractor.ActionExtractor(),
+            cause_extractor.CauseExtractor(),
+            method_extractor.MethodExtractor()
+        ]
+        self.extractor = MasterExtractor(preprocessor=extractor_preprocessor, extractors=extractors)
 
     def get_top_wh_phrases(self, text_segment):
         top_phrases = {}
@@ -35,10 +41,13 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
                 doc = Document.from_text(text_segment)
                 doc = self.extractor.parse(doc)
                 for question_type in QUESTION_WORDS:
-                    try:
-                        top_phrases[question_type] = doc.get_top_answer(question_type).get_parts_as_text()
-                    except:
-                        continue
+                    if question_type == "where" or question_type == "when":
+                        top_phrases[question_type] = "NOT PROCESSED"
+                    else:
+                        try:
+                            top_phrases[question_type] = doc.get_top_answer(question_type).get_parts_as_text()
+                        except:
+                            continue
             except:
                 pass
 
