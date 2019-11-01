@@ -8,7 +8,9 @@ def get_batch_source(source_type, source_name, delete_when_complete):
         return FileSystemBatchSource(source_name, delete_when_complete=delete_when_complete)
     elif source_type == "s3":
         source_names = source_name.split("/")
-        return S3BatchSource(bucket_name=source_names[0], folder_name=source_names[1], delete_when_complete=delete_when_complete)
+        bucket_name = source_names[0]
+        folder_name = "/".join(source_names[1:])
+        return S3BatchSource(bucket_name=bucket_name, folder_name=folder_name, delete_when_complete=delete_when_complete)
     elif source_type == "sqs":
         return SQSBatchSource(source_name)
     else:
@@ -19,7 +21,9 @@ def get_batch_destination(dest_type, dest_name):
         return FileSystemBatchDestination(dest_name)
     elif dest_type == "s3":
         dest_names = dest_name.split("/")
-        return S3BatchDestination(bucket_name=dest_names[0], folder_name=dest_names[1])
+        bucket_name = dest_names[0]
+        folder_name = "/".join(dest_names[1:])
+        return S3BatchDestination(bucket_name=bucket_name, folder_name=folder_name)
     elif dest_type == "sqs":
         return SQSBatchDestination(dest_name)
     else:
@@ -50,9 +54,9 @@ def main():
     arggroup.add_argument("--process", choices=["preprocessing", "wh-phrases", "transfer"] )
 
     parser.add_argument("-st", "--source-type", choices=["fs", "s3", "sqs"], required=True)
-    parser.add_argument("-sn", "--source-name", required=True, help="If using S3, use the format bucket-name/folder-name.")
+    parser.add_argument("-sn", "--source-name", required=True, help="If using S3, use the format bucket-name/folder/name.")
     parser.add_argument("-dt", "--dest-type", choices=["fs", "s3", "sqs"], required=True)
-    parser.add_argument("-dn", "--dest-name", required=True, help="If using S3, use the format bucket-name/folder-name.")
+    parser.add_argument("-dn", "--dest-name", required=True, help="If using S3, use the format bucket-name/folder/name.")
 
     parser.add_argument("-d", "--delete-when-complete", default=False, action="store_true")
     parser.add_argument("-bs", "--batch-size", type=int, default=1000)
