@@ -29,13 +29,28 @@ def get_batch_destination(dest_type, dest_name):
     else:
         raise AttributeError(f"Unsupported batch destination type {dest_type}.")
 
-def get_batch_processor(batch_processor_type, batch_source, batch_dest):
+def get_batch_processor(batch_processor_type,
+                            batch_source,
+                            batch_dest,
+                            id_col_name=None,
+                            source_col_name=None,
+                            dest_col_name=None,
+                            include_cols=None):
+    kwargs = {
+        "source" : batch_source, 
+        "dest" : batch_dest,
+        "id_col_name" : id_col_name,
+        "source_col_name" : source_col_name,
+        "dest_col_name" : dest_col_name,
+        "include_cols" : include_cols
+    }
+    
     if batch_processor_type == "preprocessing":
-        return BatchPreprocessor(batch_source, batch_dest)
+        return BatchPreprocessor(**kwargs)
     elif batch_processor_type == "wh-phrases":
-        return WHPhrasesBatchProcessor(batch_source, batch_dest)
+        return WHPhrasesBatchProcessor(**kwargs)
     elif batch_processor_type == "transfer":
-        return BatchTransferer(batch_source, batch_dest)
+        return BatchTransferer(**kwargs)
     else:
         raise AttributeError(f"Unsupported batch processor type {batch_processor_type}.")
 
@@ -61,19 +76,27 @@ def main():
     parser.add_argument("-d", "--delete-when-complete", default=False, action="store_true")
     parser.add_argument("-bs", "--batch-size", type=int, default=1000)
 
+    parser.add_argument("--id-col", default="ID")
+    parser.add_argument("--source-col", default="Preprocessed Text")
+    parser.add_argument("--dest-col", default="Processed Text")
+    parser.add_argument("--include-cols", nargs="*", default=None)
+
     args = parser.parse_args()
 
     batch_dest = get_batch_destination(args.dest_type, args.dest_name)
-    batch_size = args.batch_size
-    delete_when_complete = args.delete_when_complete
 
     if args.populate:
         df_file_name = args.source_name
-        populate(df_file_name, batch_dest, batch_size)
+        populate(df_file_name, batch_dest, args.batch_size)
     else:
-        batch_source = get_batch_source(args.source_type, args.source_name, delete_when_complete)
-        batch_processor_type = args.process
-        batch_processor = get_batch_processor(batch_processor_type, batch_source, batch_dest)
+        batch_source = get_batch_source(args.source_type, args.source_name, args.delete_when_complete)
+        batch_processor = get_batch_processor(batch_processor_type=args.process,
+                                                batch_source=batch_source,
+                                                batch_dest=batch_dest,
+                                                id_col_name=args.id_col,
+                                                source_col_name=args.source_col,
+                                                dest_col_name=args.dest_col,
+                                                include_cols=args.include_cols)
         process(batch_processor)
 
 if __name__ == "__main__":
