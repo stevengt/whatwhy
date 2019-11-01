@@ -36,7 +36,10 @@ RUN echo "whatwhy --process wh-phrases \
                   --source-type sqs \
                   --source-name whatwhy-wh-phrase-extraction \
                   --dest-type s3 \
-                  --dest-name whatwhy-data/wh-phrases &" > start-whatwhy && \
+                  --dest-name whatwhy-data/wh-phrases \
+                  --id-col ID \
+                  --source-col 'Preprocessed Text' \
+                  --include-cols 'Tweet ID' &" > start-whatwhy && \
     chmod +x start-whatwhy
 RUN echo "pkill whatwhy" > stop-whatwhy && chmod +x stop-whatwhy
 RUN echo "./stop-whatwhy && ./start-whatwhy" > restart-whatwhy && chmod +x restart-whatwhy
