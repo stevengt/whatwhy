@@ -15,7 +15,7 @@ class BatchFilterer(BatchProcessorBase):
                        source_col_name="Preprocessed Text",
                        dest_col_name="Processed Text",
                        include_cols=None,
-                       remove_stop_words = True):
+                       should_remove_stop_words=True):
 
         super().__init__(source=source,
                             dest=dest,
@@ -23,13 +23,13 @@ class BatchFilterer(BatchProcessorBase):
                             source_col_name=source_col_name,
                             dest_col_name=dest_col_name,
                             include_cols=include_cols)
-        self.remove_stop_words = remove_stop_words
+        self.should_remove_stop_words = should_remove_stop_words
 
     def get_batch_results(self, batch):
         batch_as_df = get_df_from_csv_string(batch)
         batch_as_df[self.dest_col_name] = batch_as_df[self.source_col_name].apply(self.get_text_as_list)
         
-        if self.remove_stop_words:
+        if self.should_remove_stop_words:
             batch_as_df[self.dest_col_name] = batch_as_df[self.dest_col_name].apply(self.remove_stop_words)
 
 
