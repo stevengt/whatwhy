@@ -16,7 +16,7 @@ RUN git clone https://github.com/fhamborg/Giveme5W1H.git && \
     mkdir -p /usr/local/lib/python3.7/site-packages/Giveme5W1H/examples/caches && \
     mv ./Giveme5W1H/Giveme5W1H/examples/caches/* /usr/local/lib/python3.7/site-packages/Giveme5W1H/examples/caches/ && \
     rm -rf ./Giveme5W1H
-RUN python -m nltk.downloader wordnet
+RUN python -m nltk.downloader wordnet stopwords
 
 ARG AWS_ACCESS_KEY_ID
 ARG AWS_SECRET_ACCESS_KEY
