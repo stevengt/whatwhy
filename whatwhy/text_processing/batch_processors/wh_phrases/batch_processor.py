@@ -14,6 +14,7 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
                        dest,
                        id_col_name="ID",
                        source_col_name="Preprocessed Text",
+                       dest_col_name=None,
                        include_cols=None):
 
         super().__init__(source=source,

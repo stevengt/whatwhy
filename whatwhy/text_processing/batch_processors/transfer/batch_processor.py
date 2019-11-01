@@ -3,7 +3,12 @@ from whatwhy.text_processing.helper_methods import get_df_from_csv_string
 
 class BatchTransferer(BatchProcessorBase):
 
-    def __init__(self, source, dest, id_col_name="ID"):
+    def __init__(self, source,
+                       dest,
+                       id_col_name="ID",
+                       source_col_name=None,
+                       dest_col_name=None,
+                       include_cols=None):
         super().__init__(source, dest, id_col_name=id_col_name)
     
     def get_batch_results(self, batch):
