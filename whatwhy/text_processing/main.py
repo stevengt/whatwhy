@@ -1,7 +1,7 @@
 import argparse
 from .helper_methods import get_df_from_file
 from .clients import FileSystemBatchSource, FileSystemBatchDestination, S3BatchSource, S3BatchDestination, SQSBatchSource, SQSBatchDestination
-from .batch_processors import BatchTransferer, BatchPreprocessor, WHPhrasesBatchProcessor
+from .batch_processors import BatchTransferer, BatchPreprocessor, WHPhrasesBatchProcessor, BatchTokenizer
 
 def get_batch_source(source_type, source_name, delete_when_complete):
     if source_type == "fs":
@@ -51,6 +51,8 @@ def get_batch_processor(batch_processor_type,
         return WHPhrasesBatchProcessor(**kwargs)
     elif batch_processor_type == "transfer":
         return BatchTransferer(**kwargs)
+    elif batch_processor_type == "tokenize":
+        return BatchTokenizer(**kwargs)
     else:
         raise AttributeError(f"Unsupported batch processor type {batch_processor_type}.")
 
@@ -66,7 +68,7 @@ def main():
 
     arggroup = parser.add_mutually_exclusive_group(required=True)
     arggroup.add_argument("--populate", action="store_true")
-    arggroup.add_argument("--process", choices=["preprocessing", "wh-phrases", "transfer"] )
+    arggroup.add_argument("--process", choices=["preprocessing", "wh-phrases", "transfer", "tokenize"] )
 
     parser.add_argument("-st", "--source-type", choices=["fs", "s3", "sqs"], required=True)
     parser.add_argument("-sn", "--source-name", required=True, help="If using S3, use the format bucket-name/folder/name.")

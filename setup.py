@@ -15,6 +15,7 @@ setup(
         "jamspell >= 0.0.11",
         "numpy >= 1.17.2",
         "pandas >= 0.25.1",
+        "textblob >= 0.15.3",
         "twython >= 3.7.0",
     ],
     packages=find_packages(),
