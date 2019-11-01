@@ -49,13 +49,13 @@ def main():
     arggroup.add_argument("--populate", action="store_true")
     arggroup.add_argument("--process", choices=["preprocessing", "wh-phrases", "transfer"] )
 
-    parser.add_argument("--source-type", choices=["fs", "s3", "sqs"], required=True)
-    parser.add_argument("--source-name", required=True, help="If using S3, use the format bucket-name/folder-name.")
-    parser.add_argument("--dest-type", choices=["fs", "s3", "sqs"], required=True)
-    parser.add_argument("--dest-name", required=True, help="If using S3, use the format bucket-name/folder-name.")
+    parser.add_argument("-st", "--source-type", choices=["fs", "s3", "sqs"], required=True)
+    parser.add_argument("-sn", "--source-name", required=True, help="If using S3, use the format bucket-name/folder-name.")
+    parser.add_argument("-dt", "--dest-type", choices=["fs", "s3", "sqs"], required=True)
+    parser.add_argument("-dn", "--dest-name", required=True, help="If using S3, use the format bucket-name/folder-name.")
 
-    parser.add_argument("--delete-when-complete", default=False, action="store_true")
-    parser.add_argument("--batch-size", type=int, default=1000)
+    parser.add_argument("-d", "--delete-when-complete", default=False, action="store_true")
+    parser.add_argument("-bs", "--batch-size", type=int, default=1000)
 
     args = parser.parse_args()
 
