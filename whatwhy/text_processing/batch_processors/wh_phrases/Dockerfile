@@ -34,12 +34,11 @@ RUN pip install .
 
 RUN echo "whatwhy --process wh-phrases \
                   --source-type sqs \
-                  --source-name whatwhy-wh-phrase-extraction \
+                  --source-name whatwhy-news-wh-phrase-extraction \
                   --dest-type s3 \
-                  --dest-name whatwhy-data/wh-phrases \
-                  --id-col ID \
-                  --source-col 'Preprocessed Text' \
-                  --include-cols 'Tweet ID' &" > start-whatwhy && \
+                  --dest-name whatwhy-data/News-Articles/all-the-news/wh-phrases \
+                  --id-col id \
+                  --source-col content &" > start-whatwhy && \
     chmod +x start-whatwhy
 RUN echo "pkill whatwhy" > stop-whatwhy && chmod +x stop-whatwhy
 RUN echo "./stop-whatwhy && ./start-whatwhy" > restart-whatwhy && chmod +x restart-whatwhy
