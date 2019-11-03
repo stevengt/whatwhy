@@ -30,9 +30,10 @@ class BatchFilterer(BatchProcessorBase):
         batch_as_df[self.dest_col_name] = batch_as_df[self.source_col_name].apply(self.get_text_as_list)
         
         if self.should_remove_stop_words:
-            batch_as_df[self.dest_col_name] = batch_as_df[self.dest_col_name].apply(self.remove_stop_words)
-
-
+            batch_as_df[self.dest_col_name] = batch_as_df[self.dest_col_name].apply(self.remove_punctuation) \
+                                                                             .apply(self.remove_non_alphabetic_characters) \
+                                                                             .apply(self.remove_stop_words) \
+                                                                             .apply(self.remove_short_tokens)
         results_df_cols = [self.id_col_name, self.dest_col_name]
         results_df_cols.extend(self.include_cols)
         results_df = batch_as_df[results_df_cols]
@@ -50,5 +51,15 @@ class BatchFilterer(BatchProcessorBase):
         else:
             return ast.literal_eval(text)
 
-    def remove_stop_words(self, word_tokens):
-        return [ word_token for word_token in word_tokens if not word_token in STOP_WORDS ]
+    def remove_punctuation(self, tokens):
+        table = str.maketrans('', '', string.punctuation)
+        return [token.translate(table) for token in tokens]
+
+    def remove_non_alphabetic_characters(self, tokens):
+        return [token for token in tokens if token.isalpha()]
+
+    def remove_stop_words(self, tokens):
+        return [ token for token in tokens if not token in STOP_WORDS ]
+
+    def remove_short_tokens(self, tokens):
+        return [token for token in tokens if len(tokens) > 1]
