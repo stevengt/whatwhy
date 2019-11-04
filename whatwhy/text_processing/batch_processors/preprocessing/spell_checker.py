@@ -5,12 +5,14 @@ import logging
 import tarfile
 import requests
 import jamspell
-from whatwhy import RESOURCES_FOLDER
+from whatwhy import get_resources_folder, configure_nltk
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
-JAMSPELL_RESOURCES_FOLDER = os.path.join(RESOURCES_FOLDER, "jamspell")
+configure_nltk()
+
+JAMSPELL_RESOURCES_FOLDER = os.path.join(get_resources_folder(), "jamspell")
 JAMSPELL_MODEL_FILE_NAME = os.path.join(JAMSPELL_RESOURCES_FOLDER, "en.bin")
 
 def get_spell_checker():    
@@ -22,8 +24,6 @@ def get_spell_checker():
     return spell_checker
 
 def create_resources_folder_if_does_not_exist():
-    if not os.path.isdir(RESOURCES_FOLDER):
-        os.mkdir(RESOURCES_FOLDER)
     if not os.path.isdir(JAMSPELL_RESOURCES_FOLDER):
         os.mkdir(JAMSPELL_RESOURCES_FOLDER)
 

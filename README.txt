@@ -1,3 +1,3 @@
 Requirements:
-    - Python3.7+
+    - Python3.6+
     - swig3.0
