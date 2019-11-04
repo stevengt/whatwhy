@@ -3,4 +3,3 @@ from .transfer import BatchTransferer
 from .preprocessing import BatchPreprocessor
 from .wh_phrases import WHPhrasesBatchProcessor
 from .tokenization import BatchTokenizer
-from .filter import BatchFilterer
