@@ -42,5 +42,5 @@ RUN echo "whatwhy --process wh-phrases \
     chmod +x start-whatwhy
 RUN echo "pkill whatwhy" > stop-whatwhy && chmod +x stop-whatwhy
 RUN echo "./stop-whatwhy && ./start-whatwhy" > restart-whatwhy && chmod +x restart-whatwhy
-RUN echo "./start-whatwhy; while true; do sleep 900; ./restart-whatwhy; done" > run-whatwhy && chmod +x run-whatwhy
+RUN echo "./start-whatwhy; while true; do sleep 1800; ./restart-whatwhy; done" > run-whatwhy && chmod +x run-whatwhy
 CMD ./run-whatwhy
