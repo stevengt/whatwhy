@@ -15,6 +15,7 @@ setup(
         "jamspell >= 0.0.11",
         "numpy >= 1.17.2",
         "pandas >= 0.25.1",
+        "scikit-learn >= 0.21.3",
         "tensorflow >= 2.0.0",
         "textblob >= 0.15.3",
         "twython >= 3.7.0",
