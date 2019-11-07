@@ -10,11 +10,12 @@ setup(
     python_requires='>=3.6',
     install_requires=[
         "boto3 >= 1.10.2",
-        "dask >= 2.6.0",
+        "gensim >= 3.8.1",
         "giveme5w1h >= 1.0.17",
         "jamspell >= 0.0.11",
         "numpy >= 1.17.2",
         "pandas >= 0.25.1",
+        "tensorflow >= 2.0.0",
         "textblob >= 0.15.3",
         "twython >= 3.7.0",
     ],
