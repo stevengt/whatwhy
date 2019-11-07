@@ -1,8 +1,14 @@
 import re
 import numpy as np
-from .spell_checker import get_spell_checker
+import jamspell
 from whatwhy.text_processing.batch_processors import BatchProcessorBase
 from whatwhy.text_processing.helper_methods import get_csv_string_from_df, get_df_from_csv_string
+from whatwhy.resource_manager import get_jamspell_model_file_name
+
+def get_spell_checker():    
+    spell_checker = jamspell.TSpellCorrector()
+    spell_checker.LoadLangModel(get_jamspell_model_file_name())
+    return spell_checker
 
 class BatchPreprocessor(BatchProcessorBase):
 

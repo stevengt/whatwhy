@@ -2,7 +2,8 @@ import string
 import numpy as np
 from textblob import TextBlob
 from nltk.corpus import stopwords 
-from whatwhy import QUESTION_WORDS, configure_nltk
+from whatwhy import QUESTION_WORDS
+from whatwhy.resource_manager import configure_nltk
 from whatwhy.text_processing.batch_processors import BatchProcessorBase
 from whatwhy.text_processing.helper_methods import get_df_from_csv_string, get_csv_string_from_df
 

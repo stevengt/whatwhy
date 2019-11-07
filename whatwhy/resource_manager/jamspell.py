@@ -1,31 +1,31 @@
 import os
 import shutil
-import subprocess
 import logging
 import tarfile
 import requests
-import jamspell
-from whatwhy import get_resources_folder, configure_nltk
+from whatwhy import get_resources_folder
+from .nltk import configure_nltk
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
-configure_nltk()
-
-JAMSPELL_RESOURCES_FOLDER = os.path.join(get_resources_folder(), "jamspell")
-JAMSPELL_MODEL_FILE_NAME = os.path.join(JAMSPELL_RESOURCES_FOLDER, "en.bin")
-
-def get_spell_checker():    
-    assert_swig3_is_installed()
-    if not is_jamspell_language_model_downloaded():
+def get_jamspell_model_file_name():
+    configure_jamspell()
+    jamspell_model_file_name = os.path.join(get_jamspell_resources_folder(), "en.bin")
+    if not os.path.exists(jamspell_model_file_name):
+        logger.warning("jamspell language model file was not found.")
         download_jamspell_language_model()
-    spell_checker = jamspell.TSpellCorrector()
-    spell_checker.LoadLangModel(JAMSPELL_MODEL_FILE_NAME)
-    return spell_checker
+    return jamspell_model_file_name
 
-def create_resources_folder_if_does_not_exist():
-    if not os.path.isdir(JAMSPELL_RESOURCES_FOLDER):
-        os.mkdir(JAMSPELL_RESOURCES_FOLDER)
+def configure_jamspell():
+    assert_swig3_is_installed()
+    configure_nltk()
+
+def get_jamspell_resources_folder():
+    jamspell_resources_folder = os.path.join(get_resources_folder(), "jamspell")
+    if not os.path.isdir(jamspell_resources_folder):
+        os.mkdir(jamspell_resources_folder)
+    return jamspell_resources_folder
 
 def assert_swig3_is_installed():
     is_swig3_installed = False
@@ -36,22 +36,15 @@ def assert_swig3_is_installed():
     error_message = "swig3.0 library was not found. Please install using the installation instructions at https://github.com/swig/swig/wiki/Getting-Started"
     assert is_swig3_installed, error_message
 
-def is_jamspell_language_model_downloaded():
-    if os.path.exists(JAMSPELL_MODEL_FILE_NAME):
-        return True
-    logger.warning("jamspell language model file was not found.")
-    return False
-
 def download_jamspell_language_model():
     logger.info("Downloading jamspell language model")
-    create_resources_folder_if_does_not_exist()
-
     model_url = "https://github.com/bakwc/JamSpell-models/raw/master/en.tar.gz"
-    tar_file_name = os.path.join(JAMSPELL_RESOURCES_FOLDER, "en.tar.gz")
+
+    tar_file_name = os.path.join(get_jamspell_resources_folder(), "en.tar.gz")
     with requests.get(model_url, stream=True) as compressed_model:
         with open(tar_file_name, "wb") as tar_file:
             tar_file.write(compressed_model.content)
 
     with tarfile.open(tar_file_name) as tar_file:
-        tar_file.extractall(path=JAMSPELL_RESOURCES_FOLDER)
+        tar_file.extractall(path=get_jamspell_resources_folder())
     os.remove(tar_file_name)
