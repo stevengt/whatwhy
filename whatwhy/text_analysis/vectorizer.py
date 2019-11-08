@@ -29,7 +29,7 @@ class TokenVectorizer():
 
     def get_word2vec_indeces(self):
         # Use a default value of -1 because 0 will be one-hot encoded, but not -1.
-        indeces = -1 * np.ones([self.num_samples, self.num_tokens_per_sample])
+        indeces = -1 * np.ones([self.num_samples, self.num_tokens_per_sample], dtype=int)
         for i, tokens_list in enumerate(self.tokens_lists):
             j = 0
             for token in tokens_list:
@@ -42,7 +42,7 @@ class TokenVectorizer():
 
     def get_one_hot_encodings(self):
         indeces = self.get_word2vec_indeces()
-        encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab])
+        encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab], dtype=int)
         for i, tokens_list in enumerate(self.tokens_lists):
             for j, index in enumerate(indeces[i]):
                 if index != -1:
