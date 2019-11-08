@@ -2,17 +2,15 @@ import numpy as np
 
 class TokenVectorizer():
 
-    def __init__(self, tokens_lists, word2vec_model):
+    def __init__(self, tokens_lists, word2vec_model, num_tokens_per_sample=30):
+        # All what/why sequences to be truncated or padded to num_tokens_per_sample
         self.tokens_lists = tokens_lists
         self.word2vec_model = word2vec_model
         self.embedded_vector_length = word2vec_model.vector_size
         self.num_words_in_vocab = len(word2vec_model.vocab.keys())
         self.num_samples = len(tokens_lists)
-        self.num_tokens_per_sample = self.__get_max_num_tokens()
+        self.num_tokens_per_sample = num_tokens_per_sample
         self.embedded_tokens = None
-
-    def __get_max_num_tokens(self):
-        return max( [ len(tokens_list) for tokens_list in self.tokens_lists ] )
 
     def get_embeddings(self):
         if self.embedded_tokens is None:
@@ -20,6 +18,8 @@ class TokenVectorizer():
             for i, tokens_list in enumerate(self.tokens_lists):
                 j = 0
                 for token in tokens_list:
+                    if j >= self.num_tokens_per_sample:
+                        break
                     try:
                         self.embedded_tokens[i, j, :] = self.word2vec_model.get_vector(token)
                         j += 1
@@ -33,6 +33,8 @@ class TokenVectorizer():
         for i, tokens_list in enumerate(self.tokens_lists):
             j = 0
             for token in tokens_list:
+                if j >= self.num_tokens_per_sample:
+                    break
                 try:
                     indeces[i,j] = self.word2vec_model.vocab[token].index
                     j += 1
@@ -45,6 +47,8 @@ class TokenVectorizer():
         encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab], dtype=int)
         for i, tokens_list in enumerate(self.tokens_lists):
             for j, index in enumerate(indeces[i]):
+                if j >= self.num_tokens_per_sample:
+                    break
                 if index != -1:
                     encodings[i, j, index] = 1
         return encodings
