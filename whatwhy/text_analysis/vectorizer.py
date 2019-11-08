@@ -1,4 +1,5 @@
 import numpy as np
+from .helper_methods import get_default_token
 
 class TokenVectorizer():
 
@@ -11,6 +12,17 @@ class TokenVectorizer():
         self.num_samples = len(tokens_lists)
         self.num_tokens_per_sample = num_tokens_per_sample
         self.embedded_tokens = None
+        self.pad_and_truncate_lists()
+
+    def pad_and_truncate_lists(self):
+        for i, tokens_list in enumerate(self.tokens_lists):
+            num_tokens = len(tokens_list)
+            if num_tokens > self.num_tokens_per_sample:
+                self.tokens_lists[i] = tokens_list[:self.num_tokens_per_sample]
+            elif num_tokens < self.num_tokens_per_sample:
+                num_missing_tokens = self.num_tokens_per_sample - num_tokens
+                default_token = get_default_token(self.word2vec_model)
+                self.tokens_lists[i].extend( [default_token] * num_missing_tokens )
 
     def get_embeddings(self):
         if self.embedded_tokens is None:
