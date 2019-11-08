@@ -12,21 +12,11 @@ class TokenVectorizer():
         self.num_samples = len(tokens_lists)
         self.num_tokens_per_sample = num_tokens_per_sample
         self.embedded_tokens = None
-        self.pad_and_truncate_lists()
-
-    def pad_and_truncate_lists(self):
-        for i, tokens_list in enumerate(self.tokens_lists):
-            num_tokens = len(tokens_list)
-            if num_tokens > self.num_tokens_per_sample:
-                self.tokens_lists[i] = tokens_list[:self.num_tokens_per_sample]
-            elif num_tokens < self.num_tokens_per_sample:
-                num_missing_tokens = self.num_tokens_per_sample - num_tokens
-                default_token = get_default_token(self.word2vec_model)
-                self.tokens_lists[i].extend( [default_token] * num_missing_tokens )
+        self.masks = [ np.zeros(self.num_words_in_vocab), -1 * np.ones(self.num_words_in_vocab) ]
 
     def get_embeddings(self):
         if self.embedded_tokens is None:
-            self.embedded_tokens = np.zeros([self.num_samples, self.num_tokens_per_sample, self.embedded_vector_length])
+            self.embedded_tokens = -1 * np.ones([self.num_samples, self.num_tokens_per_sample, self.embedded_vector_length])
             for i, tokens_list in enumerate(self.tokens_lists):
                 j = 0
                 for token in tokens_list:
@@ -56,12 +46,13 @@ class TokenVectorizer():
 
     def get_one_hot_encodings(self):
         indeces = self.get_word2vec_indeces()
-        encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab], dtype=int)
+        encodings = -1 * np.ones([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab], dtype=int)
         for i, tokens_list in enumerate(self.tokens_lists):
             for j, index in enumerate(indeces[i]):
                 if j >= self.num_tokens_per_sample:
                     break
                 if index != -1:
+                    encodings[i, j, :] = np.zeros(self.num_words_in_vocab)
                     encodings[i, j, index] = 1
         return encodings
 
@@ -69,7 +60,7 @@ class TokenVectorizer():
         words = []
         for i in range(self.num_tokens_per_sample):
             word_index_one_hot = encodings[i,:]
-            if np.count_nonzero(word_index_one_hot) > 0:
+            if not np.array_equal(word_index_one_hot, self.masks[0]) and not np.array_equal(word_index_one_hot, self.masks[1]):
                 word_index = np.argmax(word_index_one_hot)
                 word = self.word2vec_model.index2word[word_index]
                 words.append(word)

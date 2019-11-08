@@ -1,6 +1,6 @@
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import Input, Model, Sequential
-from tensorflow.keras.layers import Bidirectional, LSTM, Dense, TimeDistributed, Activation
+from tensorflow.keras.layers import Bidirectional, LSTM, Dense, TimeDistributed, Activation, Masking
 from tensorflow.keras.optimizers import Adam
 from .vectorizer import TokenVectorizer
 
@@ -33,11 +33,13 @@ class WhatToWhyModel():
         
         model = Sequential()
         model.add( Input(shape=input_shape) )
+        model.add( Masking(mask_value=-1.0 ) )
     #     model.add(LSTM(hidden_size, return_sequences=True))
         model.add( LSTM( num_units_in_hidden_layer, return_sequences=True ) )
         if use_dropout:
             model.add( Dropout(0.5) )
         model.add( TimeDistributed( Dense(self.num_words_in_vocab) ) )
+        model.add( Masking(mask_value=-1.0 ) )
         model.add( Activation('softmax') )
 
         model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
@@ -46,7 +48,7 @@ class WhatToWhyModel():
         self.model = model
 
     def fit(self):
-        self.model.fit(self.X_train, self.y_train, epochs=1000, batch_size=16)
+        self.model.fit(self.X_train, self.y_train, epochs=1, batch_size=16)
 
     def predict(self, list_of_what_tokens):
         lists_of_what_tokens = [list_of_what_tokens]
