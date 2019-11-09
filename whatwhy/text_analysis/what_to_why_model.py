@@ -6,26 +6,23 @@ from .vectorizer import TokenVectorizer
 
 class WhatToWhyModel():
 
-    def __init__(self, lists_of_what_tokens, lists_of_why_tokens, word2vec_model):
+    def __init__(self, lists_of_what_tokens, lists_of_why_tokens, word2vec_model, max_num_tokens_per_sample=10):
         
-        max_num_tokens_per_sample = 10 
-
-        self.lists_of_what_tokens = lists_of_what_tokens
-        self.lists_of_why_tokens = lists_of_why_tokens
+        self.num_tokens_per_sample = max_num_tokens_per_sample
+        self.word2vec_model = word2vec_model
+        self.decoder = TokenVectorizer([], self.word2vec_model, self.num_tokens_per_sample)
 
         embedded_what_tokens = TokenVectorizer(lists_of_what_tokens, word2vec_model, max_num_tokens_per_sample).get_embeddings()
         one_hot_why_tokens = TokenVectorizer(lists_of_why_tokens, word2vec_model, max_num_tokens_per_sample).get_one_hot_encodings()
-        self.word2vec_model = word2vec_model
+
+        self.embedded_vector_length = embedded_what_tokens.shape[-1]
+        self.num_words_in_vocab = one_hot_why_tokens.shape[-1]
 
         X_train, X_test, y_train, y_test = train_test_split(embedded_what_tokens, one_hot_why_tokens, test_size=0.33, random_state = 42)
         self.X_train = X_train
         self.X_test = X_test
         self.y_train = y_train
         self.y_test = y_test
-
-        self.embedded_vector_length = embedded_what_tokens.shape[-1]
-        self.num_words_in_vocab = one_hot_why_tokens.shape[-1]
-        self.num_tokens_per_sample = max_num_tokens_per_sample
 
         self.model = None
 
@@ -61,22 +58,23 @@ class WhatToWhyModel():
     def predict_all(self, lists_of_what_tokens):
         vectorizer = TokenVectorizer(lists_of_what_tokens, self.word2vec_model, self.num_tokens_per_sample)
         embedded_what_tokens = vectorizer.get_embeddings()
+        self.predict_all_from_embeddings(embedded_what_tokens)
+
+    def predict_all_from_embeddings(self, embedded_what_tokens):
         predictions_one_hot = self.model.predict(embedded_what_tokens)
-        return vectorizer.decode_multiple_one_hot_samples(predictions_one_hot)
+        return self.decoder.decode_multiple_one_hot_samples(predictions_one_hot)
 
     def compare_test_set_to_predictions(self):
-        actual_vals = TokenVectorizer([], self.word2vec_model, self.num_tokens_per_sample).decode_multiple_one_hot_samples(self.y_test)
-        num_samples = self.y_train.shape[0]
-        predictions = self.predict_all(self.lists_of_what_tokens[:num_samples])
+        actual_vals = self.decoder.decode_multiple_one_hot_samples(self.y_test)
+        predictions = self.predict_all_from_embeddings(self.X_test)
         for i, prediction in enumerate(predictions):
             print(f"Actual    : { actual_vals[i] }")
             print(f"Predicted : { prediction }")
             print("---------------------------------------------")
 
     def compare_train_set_to_predictions(self):
-        actual_vals = TokenVectorizer([], self.word2vec_model, self.num_tokens_per_sample).decode_multiple_one_hot_samples(self.y_train)
-        num_samples = self.y_train.shape[0]
-        predictions = self.predict_all(self.lists_of_what_tokens[:num_samples])
+        actual_vals = self.decoder.decode_multiple_one_hot_samples(self.y_train)
+        predictions = self.predict_all_from_embeddings(self.X_train)
         for i, prediction in enumerate(predictions):
             print(f"Actual    : { actual_vals[i] }")
             print(f"Predicted : { prediction }")
