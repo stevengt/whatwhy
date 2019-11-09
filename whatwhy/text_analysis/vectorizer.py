@@ -13,10 +13,21 @@ class TokenVectorizer():
         self.num_tokens_per_sample = num_tokens_per_sample
         self.embedded_tokens = None
         self.masks = [ np.zeros(self.num_words_in_vocab), -1 * np.ones(self.num_words_in_vocab) ]
+        self.end_of_sequence_token = "."
+
+    def truncate_tokens_lists(self):
+        for i, tokens_list in enumerate(self.tokens_lists):
+            self.tokens_lists[i] = tokens_list[:self.num_tokens_per_sample - 1]
+
+    def add_end_of_sequence_tokens(self):
+        for tokens_list in self.tokens_lists:
+            tokens_list.append(self.end_of_sequence_token)
 
     def get_embeddings(self):
+        self.truncate_tokens_lists()
+        self.add_end_of_sequence_tokens()
         if self.embedded_tokens is None:
-            self.embedded_tokens = -1 * np.ones([self.num_samples, self.num_tokens_per_sample, self.embedded_vector_length])
+            self.embedded_tokens = np.zeros([self.num_samples, self.num_tokens_per_sample, self.embedded_vector_length])
             for i, tokens_list in enumerate(self.tokens_lists):
                 j = 0
                 for token in tokens_list:
@@ -45,14 +56,15 @@ class TokenVectorizer():
         return indeces
 
     def get_one_hot_encodings(self):
+        self.truncate_tokens_lists()
+        self.add_end_of_sequence_tokens()
         indeces = self.get_word2vec_indeces()
-        encodings = -1 * np.ones([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab], dtype=int)
+        encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab], dtype=int)
         for i, tokens_list in enumerate(self.tokens_lists):
             for j, index in enumerate(indeces[i]):
                 if j >= self.num_tokens_per_sample:
                     break
                 if index != -1:
-                    encodings[i, j, :] = np.zeros(self.num_words_in_vocab)
                     encodings[i, j, index] = 1
         return encodings
 
@@ -63,6 +75,8 @@ class TokenVectorizer():
             if not np.array_equal(word_index_one_hot, self.masks[0]) and not np.array_equal(word_index_one_hot, self.masks[1]):
                 word_index = np.argmax(word_index_one_hot)
                 word = self.word2vec_model.index2word[word_index]
+                if word == self.end_of_sequence_token:
+                    break
                 words.append(word)
         return " ".join(words)
 

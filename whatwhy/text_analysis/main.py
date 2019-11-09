@@ -14,8 +14,8 @@ for question_type in QUESTION_WORDS:
     token_col = question_type + " tokens"
     df[token_col] = df[token_col].apply(get_text_as_list)
 
-what_tokens = df["what tokens"].tolist()[:50]
-why_tokens = df["why tokens"].tolist()[:50]
+what_tokens = df["what tokens"].tolist()[:10]
+why_tokens = df["why tokens"].tolist()[:10]
 
 
 # from .mock_model import *
@@ -23,7 +23,8 @@ why_tokens = df["why tokens"].tolist()[:50]
 # what_tokens = MOCK_TOKENS_LISTS
 # why_tokens = MOCK_TOKENS_LISTS[::-1]
 
-w2w_model = WhatToWhyModel(what_tokens, why_tokens, word2vec_model)
+# w2w_model = WhatToWhyModel(what_tokens, why_tokens, word2vec_model)
+w2w_model = WhatToWhyModel(what_tokens, what_tokens, word2vec_model)
 w2w_model.compile()
 w2w_model.fit()
 w2w_model.compare_train_set_to_predictions()
