@@ -89,11 +89,11 @@ class TokenVectorizer():
     def get_one_hot_encodings(self):
         if self.one_hot_encodings is None:
             labels = self.get_word2vec_labels()
-            encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab])
+            encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab], dtype=bool)
             for i, tokens_list in enumerate(self.tokens_lists):
                 for j, label in enumerate(labels[i]):
                     if label != -1:
-                        encodings[i, j, label] = 1
+                        encodings[i, j, label] = True
             self.one_hot_encodings = encodings
         return self.one_hot_encodings
 
