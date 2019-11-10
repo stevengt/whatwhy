@@ -32,7 +32,7 @@ class Seq2SeqModel():
     def compile(self):
         input_shape = (self.num_tokens_per_sample, self.embedded_vector_length)
         num_units_in_hidden_layer = self.embedded_vector_length
-        use_dropout = False
+        use_dropout = True
         
         model = Sequential()
         model.add( Input(shape=input_shape) )
