@@ -3,15 +3,20 @@ from .helper_methods import get_default_token
 
 class TokenVectorizer():
 
-    def __init__(self, word2vec_model, tokens_lists=None, num_tokens_per_sample=30):
+    def __init__(self, word2vec_model, tokens_lists=None, num_tokens_per_sample=30, vocab_index=None):
 
         self.word2vec_model = word2vec_model
+        self.num_tokens_per_sample = num_tokens_per_sample
+        self.vocab_index = vocab_index
+
         self.embedded_vector_length = self.get_embedded_vector_length()
         self.num_words_in_vocab = self.get_num_words_in_vocab()
-        self.num_tokens_per_sample = num_tokens_per_sample
         self.embedded_tokens = None
         self.mask = np.zeros(self.num_words_in_vocab)
+        
         self.end_of_sequence_token = get_default_token(word2vec_model)
+        if self.vocab_index is not None:
+            self.vocab_index.add_token(self.end_of_sequence_token)
 
         if tokens_lists is not None:
             self.tokens_lists = tokens_lists
@@ -23,7 +28,22 @@ class TokenVectorizer():
         return self.word2vec_model.vector_size
 
     def get_num_words_in_vocab(self):
-        return len(self.word2vec_model.vocab.keys())
+        if self.vocab_index is not None:
+            return self.vocab_index.vocab_size
+        else:
+            return len(self.word2vec_model.vocab.keys())
+
+    def get_index_from_token(self, token):
+        if self.vocab_index is not None:
+            return self.vocab_index.word2index[token]
+        else:
+            return self.word2vec_model.vocab[token].index
+
+    def get_token_from_index(self, index):
+        if self.vocab_index is not None:
+            return self.vocab_index.index2word[index]
+        else:
+            return self.word2vec_model.index2word[index]
 
     def truncate_tokens_lists(self):
         for i, tokens_list in enumerate(self.tokens_lists):
@@ -53,7 +73,7 @@ class TokenVectorizer():
             j = 0
             for token in tokens_list:
                 try:
-                    indeces[i,j] = self.word2vec_model.vocab[token].index
+                    indeces[i,j] = self.get_index_from_token(token)
                     j += 1
                 except:
                     continue
@@ -74,7 +94,7 @@ class TokenVectorizer():
             word_index_one_hot = encodings[i,:]
             if not np.array_equal(word_index_one_hot, self.mask):
                 word_index = np.argmax(word_index_one_hot)
-                word = self.word2vec_model.index2word[word_index]
+                word = self.get_token_from_index(word_index)
                 if word == self.end_of_sequence_token:
                     break
                 words.append(word)

@@ -4,16 +4,18 @@ from .vectorizer import TokenVectorizer
 class WhatWhyPredictor():
     """Predicts a sequence of text which answers the question 'why?' given some input 'what'."""
 
-    def __init__(self, word2vec_model, seq2seq_model=None, max_num_tokens_per_sample=20):
+    def __init__(self, word2vec_model, seq2seq_model=None, max_num_tokens_per_sample=20, vocab_index=None):
         self.word2vec_model = word2vec_model
         self.seq2seq_model = seq2seq_model
         self.max_num_tokens_per_sample = max_num_tokens_per_sample
+        self.vocab_index = vocab_index
 
         if seq2seq_model is not None:
             self.max_num_tokens_per_sample = seq2seq_model.num_tokens_per_sample
 
         self.decoder = TokenVectorizer( word2vec_model=word2vec_model,
-                                        num_tokens_per_sample=self.max_num_tokens_per_sample )
+                                        num_tokens_per_sample=self.max_num_tokens_per_sample,
+                                        vocab_index=self.vocab_index )
 
     def fit_tokens( self, lists_of_what_tokens,
                           lists_of_why_tokens,
@@ -23,11 +25,13 @@ class WhatWhyPredictor():
 
         embedded_what_tokens = TokenVectorizer( word2vec_model=self.word2vec_model,
                                                 tokens_lists=lists_of_what_tokens,
-                                                num_tokens_per_sample=self.max_num_tokens_per_sample ).get_embeddings()
+                                                num_tokens_per_sample=self.max_num_tokens_per_sample,
+                                                vocab_index=self.vocab_index ).get_embeddings()
 
         one_hot_why_tokens = TokenVectorizer( word2vec_model=self.word2vec_model,
                                               tokens_lists=lists_of_why_tokens,
-                                              num_tokens_per_sample=self.max_num_tokens_per_sample ).get_one_hot_encodings()
+                                              num_tokens_per_sample=self.max_num_tokens_per_sample,
+                                              vocab_index=self.vocab_index ).get_one_hot_encodings()
 
         self.seq2seq_model = Seq2SeqModel(embedded_what_tokens, one_hot_why_tokens)
         self.seq2seq_model.fit(epochs=epochs, batch_size=batch_size)
@@ -39,7 +43,8 @@ class WhatWhyPredictor():
     def predict_all(self, lists_of_what_tokens):
         embedded_what_tokens = TokenVectorizer( word2vec_model=self.word2vec_model,
                                                 tokens_lists=lists_of_what_tokens,
-                                                num_tokens_per_sample=self.max_num_tokens_per_sample ).get_embeddings()
+                                                num_tokens_per_sample=self.max_num_tokens_per_sample,
+                                                vocab_index=self.vocab_index ).get_embeddings()
         one_hot_predictions = self.seq2seq_model.predict_all(embedded_what_tokens)
         predictions = self.decoder.decode_multiple_one_hot_samples(one_hot_predictions)
         return predictions

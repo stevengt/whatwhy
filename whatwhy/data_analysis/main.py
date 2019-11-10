@@ -4,6 +4,7 @@ from whatwhy.text_processing.helper_methods import get_df_from_file
 from whatwhy.resource_manager import get_glove_wiki_gigaword_50_model
 from .helper_methods import get_text_as_list
 from .whatwhy_predictor import WhatWhyPredictor
+from .vocab_index import VocabularyIndex
 
 word2vec_model = get_glove_wiki_gigaword_50_model()
 
@@ -23,10 +24,12 @@ why_tokens = df["why tokens"].tolist()[:10]
 # what_tokens = MOCK_TOKENS_LISTS
 # why_tokens = MOCK_TOKENS_LISTS[::-1]
 
-max_num_tokens_per_sample = 10
-epochs = 10
+# why_tokens = what_tokens
 
-w2w_model = WhatWhyPredictor(word2vec_model, max_num_tokens_per_sample=max_num_tokens_per_sample)
-# w2w_model.fit_tokens(what_tokens, why_tokens, epochs=epochs)
-w2w_model.fit_tokens(what_tokens, what_tokens, epochs=epochs)
+max_num_tokens_per_sample = 10
+epochs = 1000
+vocab_index = VocabularyIndex.from_lists(why_tokens)
+
+w2w_model = WhatWhyPredictor(word2vec_model, max_num_tokens_per_sample=max_num_tokens_per_sample, vocab_index=vocab_index)
+w2w_model.fit_tokens(what_tokens, why_tokens, epochs=epochs)
 w2w_model.compare_train_set_to_predictions()
