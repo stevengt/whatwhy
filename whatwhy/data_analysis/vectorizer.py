@@ -33,17 +33,17 @@ class TokenVectorizer():
         else:
             return len(self.word2vec_model.vocab.keys())
 
-    def get_index_from_token(self, token):
+    def get_label_from_token(self, token):
         if self.vocab_index is not None:
             return self.vocab_index.word2index[token]
         else:
             return self.word2vec_model.vocab[token].index
 
-    def get_token_from_index(self, index):
+    def get_token_from_label(self, label):
         if self.vocab_index is not None:
-            return self.vocab_index.index2word[index]
+            return self.vocab_index.index2word[label]
         else:
-            return self.word2vec_model.index2word[index]
+            return self.word2vec_model.index2word[label]
 
     def truncate_tokens_lists(self):
         for i, tokens_list in enumerate(self.tokens_lists):
@@ -66,35 +66,35 @@ class TokenVectorizer():
                         pass
         return self.embedded_tokens
 
-    def get_word2vec_indeces(self):
+    def get_word2vec_labels(self):
         # Use a default value of -1 for tokens which should not be one-hot encoded.
-        indeces = -1 * np.ones([self.num_samples, self.num_tokens_per_sample], dtype=int)
+        labels = -1 * np.ones([self.num_samples, self.num_tokens_per_sample], dtype=int)
         for i, tokens_list in enumerate(self.tokens_lists):
             j = 0
             for token in tokens_list:
                 try:
-                    indeces[i,j] = self.get_index_from_token(token)
+                    labels[i,j] = self.get_label_from_token(token)
                     j += 1
                 except:
                     continue
-        return indeces
+        return labels
 
     def get_one_hot_encodings(self):
-        indeces = self.get_word2vec_indeces()
+        labels = self.get_word2vec_labels()
         encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab])
         for i, tokens_list in enumerate(self.tokens_lists):
-            for j, index in enumerate(indeces[i]):
-                if index != -1:
-                    encodings[i, j, index] = 1
+            for j, label in enumerate(labels[i]):
+                if label != -1:
+                    encodings[i, j, label] = 1
         return encodings
 
     def decode_single_one_hot_sample(self, encodings):
         words = []
         for i in range(self.num_tokens_per_sample):
-            word_index_one_hot = encodings[i,:]
-            if not np.array_equal(word_index_one_hot, self.mask):
-                word_index = np.argmax(word_index_one_hot)
-                word = self.get_token_from_index(word_index)
+            word_label_one_hot = encodings[i,:]
+            if not np.array_equal(word_label_one_hot, self.mask):
+                word_label = np.argmax(word_label_one_hot)
+                word = self.get_token_from_label(word_label)
                 if word == self.end_of_sequence_token:
                     break
                 words.append(word)
