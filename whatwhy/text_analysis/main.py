@@ -3,7 +3,7 @@ from whatwhy import QUESTION_WORDS
 from whatwhy.text_processing.helper_methods import get_df_from_file
 from whatwhy.resource_manager import get_glove_wiki_gigaword_50_model
 from .helper_methods import get_text_as_list
-from .what_to_why_model import WhatToWhyModel
+from .whatwhy_predictor import WhatWhyPredictor
 
 word2vec_model = get_glove_wiki_gigaword_50_model()
 
@@ -23,8 +23,10 @@ why_tokens = df["why tokens"].tolist()[:10]
 # what_tokens = MOCK_TOKENS_LISTS
 # why_tokens = MOCK_TOKENS_LISTS[::-1]
 
-# w2w_model = WhatToWhyModel(what_tokens, why_tokens, word2vec_model)
-w2w_model = WhatToWhyModel(what_tokens, what_tokens, word2vec_model)
-w2w_model.compile()
-w2w_model.fit()
+max_num_tokens_per_sample = 10
+epochs = 10
+
+w2w_model = WhatWhyPredictor(word2vec_model, max_num_tokens_per_sample=max_num_tokens_per_sample)
+# w2w_model.fit_tokens(what_tokens, why_tokens, epochs=epochs)
+w2w_model.fit_tokens(what_tokens, what_tokens, epochs=epochs)
 w2w_model.compare_train_set_to_predictions()
