@@ -11,7 +11,7 @@ class TokenVectorizer():
         self.num_tokens_per_sample = num_tokens_per_sample
         self.embedded_tokens = None
         self.mask = np.zeros(self.num_words_in_vocab)
-        self.end_of_sequence_token = "."
+        self.end_of_sequence_token = get_default_token(word2vec_model)
 
         if tokens_lists is not None:
             self.tokens_lists = tokens_lists
