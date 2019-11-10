@@ -1,3 +1,4 @@
+import pickle
 import numpy as np
 from .helper_methods import get_default_token
 
@@ -12,6 +13,7 @@ class TokenVectorizer():
         self.embedded_vector_length = self.get_embedded_vector_length()
         self.num_words_in_vocab = self.get_num_words_in_vocab()
         self.embedded_tokens = None
+        self.one_hot_encodings = None
         self.mask = np.zeros(self.num_words_in_vocab)
         
         self.end_of_sequence_token = get_default_token(word2vec_model)
@@ -23,6 +25,11 @@ class TokenVectorizer():
             self.num_samples = len(tokens_lists)
             self.truncate_tokens_lists()
             self.add_end_of_sequence_tokens()
+
+    @staticmethod
+    def load_from_pickle_file(file_name):
+        with open(file_name, "rb") as in_file:
+            return pickle.load(in_file)
 
     def get_embedded_vector_length(self):
         return self.word2vec_model.vector_size
@@ -80,13 +87,15 @@ class TokenVectorizer():
         return labels
 
     def get_one_hot_encodings(self):
-        labels = self.get_word2vec_labels()
-        encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab])
-        for i, tokens_list in enumerate(self.tokens_lists):
-            for j, label in enumerate(labels[i]):
-                if label != -1:
-                    encodings[i, j, label] = 1
-        return encodings
+        if self.one_hot_encodings is None:
+            labels = self.get_word2vec_labels()
+            encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab])
+            for i, tokens_list in enumerate(self.tokens_lists):
+                for j, label in enumerate(labels[i]):
+                    if label != -1:
+                        encodings[i, j, label] = 1
+            self.one_hot_encodings = encodings
+        return self.one_hot_encodings
 
     def decode_single_one_hot_sample(self, encodings):
         words = []
@@ -107,3 +116,17 @@ class TokenVectorizer():
             sample = encodings[i,:,:]
             decoded_samples.append( self.decode_single_one_hot_sample(sample) )
         return decoded_samples
+
+    def save_embeddings_to_pickle_file(self, file_name):
+        embeddings = self.get_embeddings()
+        with open(file_name, "wb") as out_file:
+            pickle.dump(embeddings, out_file)
+    
+    def save_one_hot_encodings_to_pickle_file(self, file_name):
+        encodings = self.get_one_hot_encodings()
+        with open(file_name, "wb") as out_file:
+            pickle.dump(encodings, out_file)
+
+    def save_to_pickle_file(self, file_name):
+        with open(file_name, "wb") as out_file:
+            pickle.dump(self, out_file)
