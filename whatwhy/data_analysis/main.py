@@ -15,8 +15,9 @@ for question_type in QUESTION_WORDS:
     token_col = question_type + " tokens"
     df[token_col] = df[token_col].apply(get_text_as_list)
 
-what_tokens = df["what tokens"].tolist()[:10]
-why_tokens = df["why tokens"].tolist()[:10]
+num_samples = 10
+what_tokens = df["what tokens"].tolist()[:num_samples]
+why_tokens = df["why tokens"].tolist()[:num_samples]
 
 
 # from .mock_model import *
