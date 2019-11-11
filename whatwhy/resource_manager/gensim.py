@@ -9,12 +9,17 @@ from whatwhy import get_resources_folder
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
-def get_glove_wiki_gigaword_50_model():
+def get_glove_wiki_gigaword_model(num_dimensions):
+    valid_dimensions = (50, 100, 200, 300)
+    if num_dimensions not in valid_dimensions:
+        raise ValueError(f"num_dimensions must be in {valid_dimensions}.")
+    
+    file_name = f"word2vec.glove.6B.{num_dimensions}d.txt"
     gensim_resources_folder = get_gensim_resources_folder()
-    model_file_name = os.path.join(gensim_resources_folder, "glove.6B.50d.word2vec.txt")
+    model_file_name = os.path.join(gensim_resources_folder, file_name)
     if not os.path.exists(model_file_name):
-        logger.warning("glove-wiki-gigaword-50 model file was not found.")
-        download_glove_wiki_gigaword_50_model()
+        logger.warning(f"{model_file_name} model file was not found.")
+        download_glove_wiki_gigaword_models()
     model = gensim.models.KeyedVectors.load_word2vec_format(model_file_name)
     return model
 
@@ -24,8 +29,8 @@ def get_gensim_resources_folder():
         os.mkdir(gensim_resources_folder)
     return gensim_resources_folder
 
-def download_glove_wiki_gigaword_50_model():
-    logger.info("Downloading glove-wiki-gigaword-50 model")
+def download_glove_wiki_gigaword_models():
+    logger.info("Downloading glove-wiki-gigaword models.")
     model_url = "http://nlp.stanford.edu/data/glove.6B.zip"
 
     zip_file_name = os.path.join(get_gensim_resources_folder(), "glove.6B.zip")
@@ -37,6 +42,8 @@ def download_glove_wiki_gigaword_50_model():
         zip_file.extractall(get_gensim_resources_folder())
     os.remove(zip_file_name)
 
-    glove_file_name = os.path.join(get_gensim_resources_folder(), "glove.6B.50d.txt")
-    word2vec_file_name =  os.path.join(get_gensim_resources_folder(), "glove.6B.50d.word2vec.txt")
-    glove2word2vec(glove_file_name, word2vec_file_name)
+    glove_file_names = ["glove.6B.50d.txt", "glove.6B.100d.txt", "glove.6B.200d.txt", "glove.6B.300d.txt"]
+    for glove_file_name in glove_file_names:
+        full_glove_file_path = os.path.join(get_gensim_resources_folder(), glove_file_name)
+        word2vec_file_name = os.path.join(get_gensim_resources_folder(), "word2vec." + glove_file_name)
+        glove2word2vec(full_glove_file_path, word2vec_file_name)
