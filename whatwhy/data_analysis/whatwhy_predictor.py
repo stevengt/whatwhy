@@ -1,4 +1,6 @@
 import os
+import pickle
+from sklearn.model_selection import train_test_split
 from .seq2seq_model import Seq2SeqModel
 from .vectorizer import TokenVectorizer
 
@@ -17,6 +19,11 @@ class WhatWhyPredictor():
         self.what_token_vectorizer = None
         self.why_token_vectorizer = None
         
+        self.X_train = None
+        self.X_test = None
+        self.Y_train = None
+        self.Y_test = None
+
         # If word2vec_model is None, then the decoder should be loader from a pickle file instead.
         if word2vec_model is not None:
             self.decoder = TokenVectorizer( word2vec_model=word2vec_model,
@@ -32,12 +39,47 @@ class WhatWhyPredictor():
                           batch_size=None ):
         """Trains a Seq2SeqModel on lists that contain sequences (lists) of 'what' and 'why' tokens."""
 
-        what_token_vectorizer, why_token_vectorizer = self.get_what_and_why_token_vectorizers(lists_of_what_tokens, lists_of_why_tokens)
-        embedded_what_tokens = what_token_vectorizer.get_embeddings()
-        one_hot_why_tokens = why_token_vectorizer.get_one_hot_encodings()
-
-        self.seq2seq_model = Seq2SeqModel(embedded_what_tokens, one_hot_why_tokens)
+        X_train, X_test, Y_train, Y_test = self.get_train_and_test_data(lists_of_what_tokens=lists_of_what_tokens, lists_of_why_tokens=lists_of_why_tokens)
+        self.seq2seq_model = Seq2SeqModel(X_train, X_test, Y_train, Y_test)
         self.seq2seq_model.fit(epochs=epochs, batch_size=batch_size)
+
+    def get_train_and_test_data( self, lists_of_what_tokens=None,
+                                       lists_of_why_tokens=None,
+                                       test_size=0.20,
+                                       random_state=42 ):
+    
+        if self.X_train is None or self.X_test is None or self.Y_train is None or self.Y_test is None:
+            what_token_vectorizer, why_token_vectorizer = self.get_what_and_why_token_vectorizers(lists_of_what_tokens, lists_of_why_tokens)
+            embedded_what_tokens = what_token_vectorizer.get_embeddings()
+            one_hot_why_tokens = why_token_vectorizer.get_one_hot_encodings()
+            self.X_train, self.X_test, self.Y_train, self.Y_test = train_test_split( embedded_what_tokens,
+                                                                                     one_hot_why_tokens,
+                                                                                     test_size=test_size,
+                                                                                     random_state=random_state )
+        return self.X_train, self.X_test, self.Y_train, self.Y_test
+
+    def save_train_and_test_data_to_pickle_files(self, dir_name, lists_of_what_tokens=None, lists_of_why_tokens=None):
+        X_train, X_test, Y_train, Y_test = self.get_train_and_test_data(lists_of_what_tokens=lists_of_what_tokens, lists_of_why_tokens=lists_of_why_tokens)
+        if not os.path.isdir(dir_name):
+            os.mkdir(dir_name)
+        with open( os.path.join(dir_name, "X_train.p") , "wb" ) as out_file:
+            pickle.dump(X_train, out_file)
+        with open( os.path.join(dir_name, "X_test.p") , "wb" ) as out_file:
+            pickle.dump(X_test, out_file)
+        with open( os.path.join(dir_name, "Y_train.p") , "wb" ) as out_file:
+            pickle.dump(Y_train, out_file)
+        with open( os.path.join(dir_name, "Y_test.p") , "wb" ) as out_file:
+            pickle.dump(Y_test, out_file)
+
+    def load_train_and_test_data_from_pickle_files(self, dir_name):
+        with open( os.path.join(dir_name, "X_train.p") , "rb" ) as in_file:
+            self.X_train = pickle.load(in_file)
+        with open( os.path.join(dir_name, "X_test.p") , "rb" ) as in_file:
+            self.X_test = pickle.load(in_file)
+        with open( os.path.join(dir_name, "Y_train.p") , "rb" ) as in_file:
+            self.Y_train = pickle.load(in_file)
+        with open( os.path.join(dir_name, "Y_test.p") , "rb" ) as in_file:
+            self.Y_test = pickle.load(in_file)
 
     def get_what_and_why_token_vectorizers(self, lists_of_what_tokens=None, lists_of_why_tokens=None):
         if self.what_token_vectorizer is None:

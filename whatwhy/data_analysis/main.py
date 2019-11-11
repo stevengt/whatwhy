@@ -12,9 +12,9 @@ csv_file_name = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-th
 vectorizers_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/vectorizers"
 model_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/tf-model"
 
-num_samples = 20000
+num_samples = 100
 max_num_tokens_per_sample = 15
-epochs = 1000
+epochs = 100
 batch_size = 16
 
 # --------------------------------------
@@ -31,15 +31,17 @@ def get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples):
 
     return what_tokens, why_tokens
 
-def create_and_save_token_vectorizers(what_tokens, why_tokens, max_num_tokens_per_sample, vectorizers_dir):
+def create_and_save_token_vectorizers_and_train_and_test_data(what_tokens, why_tokens, max_num_tokens_per_sample, vectorizers_dir):
     word2vec_model = get_glove_wiki_gigaword_model(num_dimensions=300)
     vocab_index = VocabularyIndex.from_lists(why_tokens)
     w2w_model = WhatWhyPredictor(word2vec_model, max_num_tokens_per_sample=max_num_tokens_per_sample, vocab_index=vocab_index)
     w2w_model.save_token_vectorizers_to_pickle_files(vectorizers_dir, what_tokens, why_tokens)
+    w2w_model.save_train_and_test_data_to_pickle_files(vectorizers_dir)
 
 def load_what_why_predictor(vectorizers_dir, model_dir=None):
     w2w_model = WhatWhyPredictor()
     w2w_model.load_token_vectorizers_from_pickle_files(vectorizers_dir)
+    w2w_model.load_train_and_test_data_from_pickle_files(vectorizers_dir)
     if model_dir is not None:
         w2w_model.load_seq2seq_model_from_saved_tf_model(model_dir)
     return w2w_model
@@ -47,7 +49,7 @@ def load_what_why_predictor(vectorizers_dir, model_dir=None):
 
 
 what_tokens, why_tokens = get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples)
-create_and_save_token_vectorizers(what_tokens, why_tokens, max_num_tokens_per_sample, vectorizers_dir)
+create_and_save_token_vectorizers_and_train_and_test_data(what_tokens, why_tokens, max_num_tokens_per_sample, vectorizers_dir)
 
 # w2w_model = load_what_why_predictor(vectorizers_dir)
 # w2w_model = load_what_why_predictor(vectorizers_dir, model_dir)
