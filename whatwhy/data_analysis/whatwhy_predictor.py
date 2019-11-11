@@ -63,13 +63,13 @@ class WhatWhyPredictor():
         if not os.path.isdir(dir_name):
             os.mkdir(dir_name)
         with open( os.path.join(dir_name, "X_train.p") , "wb" ) as out_file:
-            pickle.dump(X_train, out_file)
+            pickle.dump(X_train, out_file, protocol=4)
         with open( os.path.join(dir_name, "X_test.p") , "wb" ) as out_file:
-            pickle.dump(X_test, out_file)
+            pickle.dump(X_test, out_file, protocol=4)
         with open( os.path.join(dir_name, "Y_train.p") , "wb" ) as out_file:
-            pickle.dump(Y_train, out_file)
+            pickle.dump(Y_train, out_file, protocol=4)
         with open( os.path.join(dir_name, "Y_test.p") , "wb" ) as out_file:
-            pickle.dump(Y_test, out_file)
+            pickle.dump(Y_test, out_file, protocol=4)
 
     def load_train_and_test_data_from_pickle_files(self, dir_name):
         with open( os.path.join(dir_name, "X_train.p") , "rb" ) as in_file:

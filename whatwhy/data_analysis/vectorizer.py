@@ -120,13 +120,13 @@ class TokenVectorizer():
     def save_embeddings_to_pickle_file(self, file_name):
         embeddings = self.get_embeddings()
         with open(file_name, "wb") as out_file:
-            pickle.dump(embeddings, out_file)
+            pickle.dump(embeddings, out_file, protocol=4)
     
     def save_one_hot_encodings_to_pickle_file(self, file_name):
         encodings = self.get_one_hot_encodings()
         with open(file_name, "wb") as out_file:
-            pickle.dump(encodings, out_file)
+            pickle.dump(encodings, out_file, protocol=4)
 
     def save_to_pickle_file(self, file_name):
         with open(file_name, "wb") as out_file:
-            pickle.dump(self, out_file)
+            pickle.dump(self, out_file, protocol=4)

@@ -12,10 +12,10 @@ csv_file_name = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-th
 vectorizers_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/vectorizers"
 model_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/tf-model"
 
-num_samples = 100
+num_samples = 30000
 max_num_tokens_per_sample = 15
-epochs = 100
-batch_size = 16
+epochs = 1000
+batch_size = 32
 
 # --------------------------------------
 
