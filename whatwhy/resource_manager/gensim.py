@@ -1,6 +1,9 @@
 import os
+import shutil
 import logging
 import zipfile
+import gzip
+
 import requests
 import gensim
 from gensim.scripts.glove2word2vec import glove2word2vec
@@ -8,6 +11,32 @@ from whatwhy import get_resources_folder
 
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
+
+def get_google_news_model():
+    gensim_resources_folder = get_gensim_resources_folder()
+    model_file_name = os.path.join(gensim_resources_folder, "GoogleNews-vectors-negative300.bin")
+    if not os.path.exists(model_file_name):
+        logger.warning(f"{model_file_name} model file was not found.")
+        download_google_news_model()
+    model = gensim.models.KeyedVectors.load_word2vec_format(model_file_name, binary=True)
+    return model
+
+def download_google_news_model():
+    logger.info("Downloading Google-News model.")
+    model_url = "https://s3.amazonaws.com/dl4j-distribution/GoogleNews-vectors-negative300.bin.gz"
+
+    file_name = os.path.join(get_gensim_resources_folder(), "GoogleNews-vectors-negative300.bin")
+    zip_file_name = os.path.join(get_gensim_resources_folder(), "GoogleNews-vectors-negative300.bin.gz")
+
+    with requests.get(model_url, stream=True) as compressed_model:
+        with open(zip_file_name, "wb") as zip_file:
+            zip_file.write(compressed_model.content)
+
+    with gzip.open(zip_file_name, "rb") as zip_file:
+        with open(file_name, "wb") as model:
+            shutil.copyfileobj(zip_file, model)
+    
+    os.remove(zip_file_name)
 
 def get_glove_wiki_gigaword_model(num_dimensions):
     valid_dimensions = (50, 100, 200, 300)

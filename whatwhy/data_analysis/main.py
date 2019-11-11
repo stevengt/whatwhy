@@ -1,7 +1,7 @@
 import numpy as np
 from whatwhy import QUESTION_WORDS
 from whatwhy.text_processing.helper_methods import get_df_from_file
-from whatwhy.resource_manager import get_glove_wiki_gigaword_model
+from whatwhy.resource_manager import get_google_news_model
 from .helper_methods import get_text_as_list
 from .whatwhy_predictor import WhatWhyPredictor
 from .vocab_index import VocabularyIndex
@@ -32,7 +32,7 @@ def get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples):
     return what_tokens, why_tokens
 
 def create_and_save_token_vectorizers_and_train_and_test_data(what_tokens, why_tokens, max_num_tokens_per_sample, vectorizers_dir):
-    word2vec_model = get_glove_wiki_gigaword_model(num_dimensions=300)
+    word2vec_model = get_google_news_model()
     vocab_index = VocabularyIndex.from_lists(why_tokens)
     w2w_model = WhatWhyPredictor(word2vec_model, max_num_tokens_per_sample=max_num_tokens_per_sample, vocab_index=vocab_index)
     w2w_model.save_token_vectorizers_to_pickle_files(vectorizers_dir, what_tokens, why_tokens)
