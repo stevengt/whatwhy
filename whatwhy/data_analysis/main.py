@@ -14,7 +14,7 @@ model_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-ne
 
 num_samples = 30000
 max_num_tokens_per_sample = 15
-epochs = 1000
+epochs = 3000
 batch_size = 32
 
 # --------------------------------------
