@@ -1,4 +1,6 @@
+import os
 from sklearn.model_selection import train_test_split
+import tensorflow
 from tensorflow.keras import Input, Model, Sequential
 from tensorflow.keras.layers import Bidirectional, LSTM, Dense, TimeDistributed, Activation, Masking, Dropout
 from tensorflow.keras.optimizers import Adam
@@ -9,25 +11,33 @@ class Seq2SeqModel():
     based on sequences of 'embedded' token data (i.e., each token is a vector).
     """
 
-    def __init__(self, X, Y):
+    def __init__(self, X=None, Y=None, pretrained_model=None):
         """
         Params:
             X : An array of embedded input data with dimensions [num_samples, num_tokens_per_sample, embedded_vector_length].
             Y : An array of one-hot encoded output data with dimensions [num_samples, num_tokens_per_sample, num_token_categories]
         """
+        if pretrained_model is None:
+            self.num_tokens_per_sample = X.shape[1]
+            self.embedded_vector_length = X.shape[2]
+            self.num_token_categories = Y.shape[2]
 
-        self.num_tokens_per_sample = X.shape[1]
-        self.embedded_vector_length = X.shape[2]
-        self.num_token_categories = Y.shape[2]
+            X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33, random_state = 42)
+            self.X_train = X_train
+            self.X_test = X_test
+            self.Y_train = Y_train
+            self.Y_test = Y_test
 
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.33, random_state = 42)
-        self.X_train = X_train
-        self.X_test = X_test
-        self.Y_train = Y_train
-        self.Y_test = Y_test
+            self.model = None
+            self.compile()
+        else:
+            self.model = pretrained_model
 
-        self.model = None
-        self.compile()
+    @classmethod
+    def load_from_saved_tf_model(cls, model_dir):
+        file_name = os.path.join(model_dir, "model.h5")
+        model = tensorflow.keras.models.load_model(file_name)
+        return cls(pretrained_model=model)
 
     def compile(self):
         input_shape = (self.num_tokens_per_sample, self.embedded_vector_length)
@@ -60,3 +70,7 @@ class Seq2SeqModel():
 
     def predict_all(self, X):
         return self.model.predict(X)
+
+    def save_model(self, model_dir):
+        file_name = os.path.join(model_dir, "model.h5")
+        self.model.save(file_name)

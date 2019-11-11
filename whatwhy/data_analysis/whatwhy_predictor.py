@@ -23,6 +23,9 @@ class WhatWhyPredictor():
                                             num_tokens_per_sample=self.max_num_tokens_per_sample,
                                             vocab_index=self.vocab_index )
 
+    def load_seq2seq_model_from_saved_tf_model(self, model_dir):
+        self.seq2seq_model = Seq2SeqModel.load_from_saved_tf_model(model_dir)
+
     def fit_tokens( self, lists_of_what_tokens=None,
                           lists_of_why_tokens=None,
                           epochs=1,
@@ -106,3 +109,6 @@ class WhatWhyPredictor():
         one_hot_predictions = self.seq2seq_model.predict_all(X_train)
         predictions = self.decoder.decode_multiple_one_hot_samples(one_hot_predictions)
         self.compare_predictions_to_actual(predictions, actual_vals)
+
+    def save_model(self, model_dir):
+        self.seq2seq_model.save_model(model_dir)

@@ -10,6 +10,7 @@ from .vocab_index import VocabularyIndex
 word2vec_model = get_glove_wiki_gigaword_model(num_dimensions=300)
 
 vectorizers_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/vectorizers"
+model_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/tf-model"
 
 csv_file_name = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/wh_phrases.csv"
 df = get_df_from_file(csv_file_name)
@@ -25,23 +26,20 @@ why_tokens = df["why tokens"].tolist()[:num_samples]
 # what_tokens = None
 # why_tokens = None
 
-
-# from .mock_model import *
-# word2vec_model = MockWord2VecModel()
-# what_tokens = MOCK_TOKENS_LISTS
-# why_tokens = MOCK_TOKENS_LISTS[::-1]
-
-# why_tokens = what_tokens
-
 max_num_tokens_per_sample = 15
-epochs = 10
-# vocab_index = None
+epochs = 100
+vocab_index = None
 vocab_index = VocabularyIndex.from_lists(why_tokens)
 
 w2w_model = WhatWhyPredictor(word2vec_model, max_num_tokens_per_sample=max_num_tokens_per_sample, vocab_index=vocab_index)
 
 w2w_model.save_token_vectorizers_to_pickle_files(vectorizers_dir, what_tokens, why_tokens)
 # w2w_model.load_token_vectorizers_from_pickle_files(vectorizers_dir)
+# w2w_model.load_seq2seq_model_from_saved_tf_model(model_dir)
 
 # w2w_model.fit_tokens(what_tokens, why_tokens, epochs=epochs)
 # w2w_model.compare_train_set_to_predictions()
+# w2w_model.save_model(model_dir)
+
+# predictions = w2w_model.predict_all(what_tokens)
+# w2w_model.compare_predictions_to_actual(predictions, [ " ".join(tokens) for tokens in why_tokens ])
