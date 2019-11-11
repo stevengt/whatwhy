@@ -72,5 +72,7 @@ class Seq2SeqModel():
         return self.model.predict(X)
 
     def save_model(self, model_dir):
+        if not os.path.isdir(model_dir):
+            os.mkdir(model_dir)
         file_name = os.path.join(model_dir, "model.h5")
         self.model.save(file_name)
