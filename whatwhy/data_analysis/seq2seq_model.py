@@ -69,9 +69,13 @@ class Seq2SeqModel():
 
         num_samples = X_train.shape[0]
         num_samples_per_fold = int(num_samples / num_cv_folds)
-        cv_split_indeces = np.arange(num_samples)[::num_samples_per_fold]
+        cv_split_indeces = list( np.arange(num_samples)[::num_samples_per_fold] )
         if cv_split_indeces[-1] < num_samples - 1:
-            cv_split_indeces[-1] = num_samples - 1
+            if len(cv_split_indeces) < num_cv_folds + 1:
+                cv_split_indeces.append(num_samples - 1)
+            else:
+                cv_split_indeces[-1] = num_samples - 1
+        cv_split_indeces = np.asarray(cv_split_indeces)
         assert len(cv_split_indeces) == num_cv_folds + 1, f"Unable to split training data into {num_cv_folds} folds."
 
         best_model = None
