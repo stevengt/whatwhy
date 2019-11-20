@@ -31,7 +31,8 @@ class WhatWhyPredictor():
                                             vocab_index=self.vocab_index )
 
     def load_seq2seq_model_from_saved_tf_model(self, model_dir):
-        self.seq2seq_model = Seq2SeqModel.load_from_saved_tf_model(model_dir)
+        X_train, X_test, Y_train, Y_test = self.get_train_and_test_data()
+        self.seq2seq_model = Seq2SeqModel(X_train, X_test, Y_train, Y_test).load_from_saved_tf_model(model_dir)
 
     def fit_tokens( self, lists_of_what_tokens=None,
                           lists_of_why_tokens=None,
@@ -110,8 +111,8 @@ class WhatWhyPredictor():
         self.decoder.save_to_pickle_file( os.path.join(target_dir, "decoder.p") )
 
     def load_token_vectorizers_from_pickle_files(self, dir_name):
-        self.what_token_vectorizer = TokenVectorizer.load_from_pickle_file( os.path.join(dir_name, "what_tokenizer.p") )
-        self.why_token_vectorizer = TokenVectorizer.load_from_pickle_file( os.path.join(dir_name, "why_tokenizer.p") )
+        # self.what_token_vectorizer = TokenVectorizer.load_from_pickle_file( os.path.join(dir_name, "what_tokenizer.p") )
+        # self.why_token_vectorizer = TokenVectorizer.load_from_pickle_file( os.path.join(dir_name, "why_tokenizer.p") )
         self.decoder = TokenVectorizer.load_from_pickle_file( os.path.join(dir_name, "decoder.p") )
         self.word2vec_model = self.decoder.word2vec_model
         self.vocab_index = self.decoder.vocab_index
@@ -137,16 +138,16 @@ class WhatWhyPredictor():
             print("---------------------------------------------")
 
     def compare_test_set_to_predictions(self):
-        X_test = self.seq2seq_model.X_test
-        Y_test = self.seq2seq_model.Y_test
+        X_test = self.X_test[:100,:,:]
+        Y_test = self.Y_test[:100,:,:]
         actual_vals = self.decoder.decode_multiple_one_hot_samples(Y_test)
         one_hot_predictions = self.seq2seq_model.predict_all(X_test)
         predictions = self.decoder.decode_multiple_one_hot_samples(one_hot_predictions)
         self.compare_predictions_to_actual(predictions, actual_vals)
 
     def compare_train_set_to_predictions(self):
-        X_train = self.seq2seq_model.X_train
-        Y_train = self.seq2seq_model.Y_train
+        X_train = self.X_train
+        Y_train = self.Y_train
         actual_vals = self.decoder.decode_multiple_one_hot_samples(Y_train)
         one_hot_predictions = self.seq2seq_model.predict_all(X_train)
         predictions = self.decoder.decode_multiple_one_hot_samples(one_hot_predictions)

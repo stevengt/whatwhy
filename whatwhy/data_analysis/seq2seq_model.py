@@ -31,11 +31,11 @@ class Seq2SeqModel():
         else:
             self.model = pretrained_model
 
-    @classmethod
-    def load_from_saved_tf_model(cls, model_dir):
+    def load_from_saved_tf_model(self, model_dir):
         file_name = os.path.join(model_dir, "model.h5")
-        model = tensorflow.keras.models.load_model(file_name)
-        return cls(pretrained_model=model)
+        self.model = self.get_new_model()
+        self.model.load_weights(file_name)
+        return self
 
     def get_new_model(self):
         input_shape = (self.num_tokens_per_sample, self.embedded_vector_length)
@@ -88,7 +88,7 @@ class Seq2SeqModel():
             X_cv = X_train[cv_indeces, :, :]
             Y_cv = Y_train[cv_indeces, :, :]
 
-            model = self.get_new_model()
+            model = Seq2SeqModel.get_new_model()
             model.fit(X, Y, epochs=epochs, batch_size=batch_size)
             scores = model.evaluate(X_cv, Y_cv)
             print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
