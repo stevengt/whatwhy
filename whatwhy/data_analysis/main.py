@@ -16,7 +16,7 @@ vectorizers_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-
 model_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/tf-model"
 # model_dir = "/home/ubuntu/whatwhy-data/tf-model"
 
-num_samples = 5000
+num_samples = 10000
 min_num_tokens_per_sample = 3
 max_num_tokens_per_sample = 10
 epochs = 500
@@ -39,10 +39,10 @@ def get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples):
 
     count = 0
     for i in range(len(tmp_what_tokens)):
-        if min_num_tokens_per_sample <= len(tmp_what_tokens[i]) <= max_num_tokens_per_sample:
-            if min_num_tokens_per_sample <= len(tmp_why_tokens[i]) <= max_num_tokens_per_sample:
-                what_tokens.append(tmp_what_tokens[i])
-                why_tokens.append(tmp_why_tokens[i])
+        if min_num_tokens_per_sample <= len(tmp_what_tokens[i]):
+            if min_num_tokens_per_sample <= len(tmp_why_tokens[i]):
+                what_tokens.append(tmp_what_tokens[i][:max_num_tokens_per_sample])
+                why_tokens.append(tmp_why_tokens[i][:max_num_tokens_per_sample])
                 count += 1
                 if count >= num_samples:
                     break
@@ -58,7 +58,7 @@ def create_and_save_token_vectorizers_and_train_and_test_data(what_tokens, why_t
 
 def load_what_why_predictor(vectorizers_dir, model_dir=None):
     w2w_model = WhatWhyPredictor()
-    w2w_model.load_token_vectorizers_from_pickle_files(vectorizers_dir)
+    # w2w_model.load_token_vectorizers_from_pickle_files(vectorizers_dir)
     w2w_model.load_train_and_test_data_from_pickle_files(vectorizers_dir)
     if model_dir is not None:
         w2w_model.load_seq2seq_model_from_saved_tf_model(model_dir)
@@ -67,15 +67,17 @@ def load_what_why_predictor(vectorizers_dir, model_dir=None):
 
 
 # what_tokens, why_tokens = get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples)
+# print(len(what_tokens))
+# print(len(why_tokens))
 # create_and_save_token_vectorizers_and_train_and_test_data(what_tokens, why_tokens, max_num_tokens_per_sample, vectorizers_dir)
 
-# w2w_model = load_what_why_predictor(vectorizers_dir)
-w2w_model = load_what_why_predictor(vectorizers_dir, model_dir)
+w2w_model = load_what_why_predictor(vectorizers_dir)
+# w2w_model = load_what_why_predictor(vectorizers_dir, model_dir)
 
-# w2w_model.fit_tokens(epochs=epochs, batch_size=batch_size)
-# w2w_model.save_model(model_dir)
+w2w_model.fit_tokens(epochs=epochs, batch_size=batch_size)
+w2w_model.save_model(model_dir)
 
 # w2w_model.compare_train_set_to_predictions()
-w2w_model.compare_test_set_to_predictions()
+# w2w_model.compare_test_set_to_predictions()
 # predictions = w2w_model.predict_all(what_tokens)
 # w2w_model.compare_predictions_to_actual(predictions, [ " ".join(tokens) for tokens in why_tokens ])
