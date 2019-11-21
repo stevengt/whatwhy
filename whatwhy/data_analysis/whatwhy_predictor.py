@@ -146,8 +146,8 @@ class WhatWhyPredictor():
         self.compare_predictions_to_actual(predictions, actual_vals)
 
     def compare_train_set_to_predictions(self):
-        X_train = self.X_train
-        Y_train = self.Y_train
+        X_train = self.X_train[:100,:,:]
+        Y_train = self.Y_train[:100,:,:]
         actual_vals = self.decoder.decode_multiple_one_hot_samples(Y_train)
         one_hot_predictions = self.seq2seq_model.predict_all(X_train)
         predictions = self.decoder.decode_multiple_one_hot_samples(one_hot_predictions)

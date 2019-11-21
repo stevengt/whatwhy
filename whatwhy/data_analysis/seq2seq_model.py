@@ -45,16 +45,21 @@ class Seq2SeqModel():
         model = Sequential()
         model.add( Input(shape=input_shape) )
         model.add( Masking(mask_value=0.0 ) )
-        model.add( Bidirectional( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) )
-        model.add( Bidirectional( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) )
+
+        # model.add( Dense( num_units_in_hidden_layer ) )
+        model.add( Dense( num_units_in_hidden_layer ) )
+        model.add( Dense( num_units_in_hidden_layer ) )
+
+        model.add( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) 
+        # model.add( Bidirectional( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) )
         if use_dropout:
-            model.add( Dropout(0.5) )
+            model.add( Dropout(0.3) )
         model.add( TimeDistributed( Dense(self.num_token_categories) ) )
 
         model.add( Masking(mask_value=0.0 ) )
         model.add( Activation('softmax') )
 
-        model.compile(loss='categorical_crossentropy', optimizer='adamax', metrics=['categorical_accuracy'])
+        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
         print(model.summary())
 
         return model
@@ -67,35 +72,35 @@ class Seq2SeqModel():
         X_train = self.X_train
         Y_train = self.Y_train
 
-        num_samples = X_train.shape[0]
-        num_samples_per_fold = int(num_samples / num_cv_folds)
-        cv_split_indeces = list( np.arange(num_samples)[::num_samples_per_fold] )
-        if cv_split_indeces[-1] < num_samples - 1:
-            if len(cv_split_indeces) < num_cv_folds + 1:
-                cv_split_indeces.append(num_samples - 1)
-            else:
-                cv_split_indeces[-1] = num_samples - 1
-        cv_split_indeces = np.asarray(cv_split_indeces)
-        assert len(cv_split_indeces) == num_cv_folds + 1, f"Unable to split training data into {num_cv_folds} folds."
+        # num_samples = X_train.shape[0]
+        # num_samples_per_fold = int(num_samples / num_cv_folds)
+        # cv_split_indeces = list( np.arange(num_samples)[::num_samples_per_fold] )
+        # if cv_split_indeces[-1] < num_samples - 1:
+        #     if len(cv_split_indeces) < num_cv_folds + 1:
+        #         cv_split_indeces.append(num_samples - 1)
+        #     else:
+        #         cv_split_indeces[-1] = num_samples - 1
+        # cv_split_indeces = np.asarray(cv_split_indeces)
+        # assert len(cv_split_indeces) == num_cv_folds + 1, f"Unable to split training data into {num_cv_folds} folds."
 
-        best_model = None
-        best_score = 0
-        for cv_num in range(num_cv_folds):
-            cv_indeces = np.arange(cv_split_indeces[cv_num], cv_split_indeces[cv_num + 1] + 1, dtype=int)
-            train_indeces = [ n for n in range(num_samples) if n not in cv_indeces ]
-            X = X_train[train_indeces, :, :]
-            Y = Y_train[train_indeces, :, :]
-            X_cv = X_train[cv_indeces, :, :]
-            Y_cv = Y_train[cv_indeces, :, :]
+        # best_model = None
+        # best_score = 0
+        # for cv_num in range(num_cv_folds):
+        #     cv_indeces = np.arange(cv_split_indeces[cv_num], cv_split_indeces[cv_num + 1] + 1, dtype=int)
+        #     train_indeces = [ n for n in range(num_samples) if n not in cv_indeces ]
+        #     X = X_train[train_indeces, :, :]
+        #     Y = Y_train[train_indeces, :, :]
+        #     X_cv = X_train[cv_indeces, :, :]
+        #     Y_cv = Y_train[cv_indeces, :, :]
 
-            model = Seq2SeqModel.get_new_model()
-            model.fit(X, Y, epochs=epochs, batch_size=batch_size)
-            scores = model.evaluate(X_cv, Y_cv)
-            print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
-            if scores[1] > best_score:
-                best_score = scores[1]
-                best_model = model
-        self.model = best_model
+        self.model = self.get_new_model()
+        self.model.fit(X_train, Y_train, epochs=epochs, batch_size=batch_size)
+        #     scores = model.evaluate(X_cv, Y_cv)
+        #     print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
+        #     if scores[1] > best_score:
+        #         best_score = scores[1]
+        #         best_model = model
+        # self.model = best_model
 
     def predict(self, x):
         X = [x]
