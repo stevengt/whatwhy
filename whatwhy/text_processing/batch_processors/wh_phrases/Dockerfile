@@ -1,4 +1,4 @@
-FROM python:3.7-slim-buster
+FROM python:3.6-slim-buster
 WORKDIR /tmp
 RUN apt-get update -y && \
     apt-get install -y \
@@ -34,11 +34,11 @@ RUN pip install .
 
 RUN echo "whatwhy --process wh-phrases \
                   --source-type sqs \
-                  --source-name whatwhy-news-wh-phrase-extraction \
+                  --source-name whatwhy-wh-phrase-extraction \
                   --dest-type s3 \
-                  --dest-name whatwhy-data/News-Articles/all-the-news/wh-phrases \
-                  --id-col id \
-                  --source-col content &" > start-whatwhy && \
+                  --dest-name whatwhy-data/News-Articles/financial-news-dataset/wh-phrases \
+                  --id-col ID \
+                  --source-col Content &" > start-whatwhy && \
     chmod +x start-whatwhy
 RUN echo "pkill whatwhy" > stop-whatwhy && chmod +x stop-whatwhy
 RUN echo "./stop-whatwhy && ./start-whatwhy" > restart-whatwhy && chmod +x restart-whatwhy

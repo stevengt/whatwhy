@@ -2,18 +2,18 @@ import numpy as np
 from whatwhy import QUESTION_WORDS
 from whatwhy.text_processing.helper_methods import get_df_from_file
 from whatwhy.resource_manager import get_google_news_model, get_glove_wiki_gigaword_model
-from .helper_methods import get_text_as_list
+from .helper_methods import get_text_as_list, remove_uncommon_whatwhy_tokens
 from .whatwhy_predictor import WhatWhyPredictor
 from .vocab_index import VocabularyIndex
 
 # --------------------------------------
 
-csv_file_name = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/wh_phrases2.csv"
+csv_file_name = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/financial-news-dataset/wh_phrases.csv"
 
-vectorizers_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/vectorizers"
+vectorizers_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/financial-news-dataset/vectorizers"
 # vectorizers_dir = "/home/ubuntu/whatwhy-data/vectorizers"
 
-model_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/all-the-news/tf-model"
+model_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/financial-news-dataset/tf-model"
 # model_dir = "/home/ubuntu/whatwhy-data/tf-model"
 
 num_samples = 10000
@@ -31,6 +31,9 @@ def get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples):
         token_col = question_type + " tokens"
         df[token_col] = df[token_col].apply(get_text_as_list)
     
+    min_token_count = 10
+    df = remove_uncommon_whatwhy_tokens(df, min_token_count)
+
     tmp_what_tokens = df["what tokens"].tolist()
     tmp_why_tokens = df["why tokens"].tolist()
 

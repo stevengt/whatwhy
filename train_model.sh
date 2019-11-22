@@ -1,5 +1,5 @@
 
-ssh -i ~/Downloads/whatwhy-ec2-key-pair.pem ubuntu@ec2-3-234-205-156.compute-1.amazonaws.com
+ssh -i ~/Downloads/whatwhy-ec2-key-pair.pem ubuntu@ec2-3-227-18-34.compute-1.amazonaws.com
 
 
 echo "Memory available in KB"
