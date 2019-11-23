@@ -12,6 +12,34 @@ from whatwhy import get_resources_folder
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
+def get_custom_word2vec_model():
+    gensim_resources_folder = get_gensim_resources_folder()
+    model_file_name = os.path.join(gensim_resources_folder, "whatwhy-custom.kv")
+    if not os.path.exists(model_file_name):
+        raise FileNotFoundError("Custom word2vec model was not found.")
+    model = gensim.models.KeyedVectors.load_word2vec_format(model_file_name)
+    return model
+
+def create_and_save_word2vec_model( tokens_lists,
+                                    embedded_vector_size=100,
+                                    min_token_count=10,
+                                    window=10,
+                                    workers=10,
+                                    iter=10 ):
+
+    gensim_resources_folder = get_gensim_resources_folder()
+    model_file_name = os.path.join(gensim_resources_folder, "whatwhy-custom.kv")
+
+    model = gensim.models.Word2Vec( tokens_lists,
+                                    size=embedded_vector_size,
+                                    window=window,
+                                    min_count=min_token_count,
+                                    workers=workers,
+                                    iter=iter)
+    if os.path.exists(model_file_name):
+        os.remove(model_file_name)
+    model.wv.save_word2vec_format(model_file_name)
+
 def get_google_news_model():
     gensim_resources_folder = get_gensim_resources_folder()
     model_file_name = os.path.join(gensim_resources_folder, "GoogleNews-vectors-negative300.bin")
