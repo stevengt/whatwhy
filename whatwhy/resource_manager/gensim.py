@@ -22,7 +22,7 @@ def get_custom_word2vec_model():
 
 def create_and_save_word2vec_model( tokens_lists,
                                     embedded_vector_size=100,
-                                    min_token_count=10,
+                                    min_token_frequency=10,
                                     window=10,
                                     workers=10,
                                     iter=10 ):
@@ -33,7 +33,7 @@ def create_and_save_word2vec_model( tokens_lists,
     model = gensim.models.Word2Vec( tokens_lists,
                                     size=embedded_vector_size,
                                     window=window,
-                                    min_count=min_token_count,
+                                    min_count=min_token_frequency,
                                     workers=workers,
                                     iter=iter)
     if os.path.exists(model_file_name):
