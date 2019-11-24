@@ -9,13 +9,17 @@ class Seq2SeqModel():
     """
     A model which predicts one-hot encoded sequences of token data
     based on sequences of 'embedded' token data (i.e., each token is a vector).
+
+    This class wraps a tensorflow.keras model that can be trained, saved, and loaded
+    using a specified data set.
     """
 
     def __init__(self, X_train=None, X_test=None, Y_train=None, Y_test=None, pretrained_model=None):
         """
         Params:
-            X_train, X_test : An array of embedded input data with dimensions [num_samples, num_tokens_per_sample, embedded_vector_length].
-            Y_train, Y_test : An array of one-hot encoded output data with dimensions [num_samples, num_tokens_per_sample, num_token_categories]
+            X_train, X_test  : An array of embedded input data with dimensions [num_samples, num_tokens_per_sample, embedded_vector_length].
+            Y_train, Y_test  : An array of one-hot encoded output data with dimensions [num_samples, num_tokens_per_sample, num_token_categories].
+            pretrained_model : [Optional] A pretrained tensorflow.keras model. If specified, all other arguments are ignored.
         """
         if pretrained_model is None:
             self.num_tokens_per_sample = X_train.shape[1]
@@ -32,86 +36,64 @@ class Seq2SeqModel():
             self.model = pretrained_model
 
     def load_from_saved_tf_model(self, model_dir):
+        """
+        Intializes a Seq2SeqModel by loading weights from
+        a file 'model.h5' in the specified directory.
+        """
         file_name = os.path.join(model_dir, "model.h5")
         self.model = self.get_new_model()
         self.model.load_weights(file_name)
         return self
 
     def get_new_model(self):
+        """
+        Returns a new instance of a tensorflow.keras model with LSTM layers
+        and masking layers to ignore padded sections of token sequences.
+        """
         input_shape = (self.num_tokens_per_sample, self.embedded_vector_length)
         num_units_in_hidden_layer = self.embedded_vector_length
         use_dropout = True
         
         model = Sequential()
-        model.add( Input(shape=input_shape) )
-        model.add( Masking(mask_value=0.0 ) )
+        model.add( Input( shape=input_shape ) )
+        model.add( Masking( mask_value=0.0 ) )
 
-        # model.add( Dense( num_units_in_hidden_layer * 2) )
-        # model.add( Dense( num_units_in_hidden_layer * 2) )
-        # model.add( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) 
-        # model.add( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) 
-        # model.add( Bidirectional( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) )
         model.add( Bidirectional( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) )
         model.add( Bidirectional( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) )
 
         if use_dropout:
-            model.add( Dropout(0.4) )
-        model.add( TimeDistributed( Dense(self.num_token_categories) ) )
+            model.add( Dropout( 0.4 ) )
+        model.add( TimeDistributed( Dense( self.num_token_categories ) ) )
 
-        model.add( Masking(mask_value=0.0 ) )
-        model.add( Activation('softmax') )
+        model.add( Masking( mask_value=0.0 ) )
+        model.add( Activation( 'softmax' ) )
 
-        model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'])
-        print(model.summary())
+        model.compile( loss='categorical_crossentropy', optimizer='adam', metrics=['categorical_accuracy'] )
+        print( model.summary() )
 
         return model
 
-    def fit(self, epochs=1, batch_size=None, num_cv_folds=3):
-        """
-        Trains the model using kfold cross-validation.
-        The data should already be shuffled before running this method.
-        """
+    def fit(self, epochs=1, batch_size=None):
+        """Trains the underlying tensorflow.keras model."""
         X_train = self.X_train
         Y_train = self.Y_train
-
-        # num_samples = X_train.shape[0]
-        # num_samples_per_fold = int(num_samples / num_cv_folds)
-        # cv_split_indeces = list( np.arange(num_samples)[::num_samples_per_fold] )
-        # if cv_split_indeces[-1] < num_samples - 1:
-        #     if len(cv_split_indeces) < num_cv_folds + 1:
-        #         cv_split_indeces.append(num_samples - 1)
-        #     else:
-        #         cv_split_indeces[-1] = num_samples - 1
-        # cv_split_indeces = np.asarray(cv_split_indeces)
-        # assert len(cv_split_indeces) == num_cv_folds + 1, f"Unable to split training data into {num_cv_folds} folds."
-
-        # best_model = None
-        # best_score = 0
-        # for cv_num in range(num_cv_folds):
-        #     cv_indeces = np.arange(cv_split_indeces[cv_num], cv_split_indeces[cv_num + 1] + 1, dtype=int)
-        #     train_indeces = [ n for n in range(num_samples) if n not in cv_indeces ]
-        #     X = X_train[train_indeces, :, :]
-        #     Y = Y_train[train_indeces, :, :]
-        #     X_cv = X_train[cv_indeces, :, :]
-        #     Y_cv = Y_train[cv_indeces, :, :]
-
         self.model = self.get_new_model()
         self.model.fit(X_train, Y_train, epochs=epochs, batch_size=batch_size)
-        #     scores = model.evaluate(X_cv, Y_cv)
-        #     print("%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
-        #     if scores[1] > best_score:
-        #         best_score = scores[1]
-        #         best_model = model
-        # self.model = best_model
 
     def predict(self, x):
+        """Returns a one-hot encoded prediction for a single embedded input vector."""
         X = [x]
         return self.predict_all(X)[0]
 
     def predict_all(self, X):
+        """Returns one-hot encoded predictions for multiple embedded input vectors."""
         return self.model.predict(X)
 
     def save_model(self, model_dir):
+        """
+        Saves the underlying tensorflow.keras model's weights to
+        a file 'model.h5' in the specified directory.
+        """
         if not os.path.isdir(model_dir):
             os.mkdir(model_dir)
         file_name = os.path.join(model_dir, "model.h5")

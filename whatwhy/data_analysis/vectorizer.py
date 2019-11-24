@@ -3,6 +3,14 @@ import numpy as np
 from .helper_methods import get_default_token
 
 class TokenVectorizer():
+    """
+    Converts sequences of tokens to/from vector representations.
+    
+    Vector embeddings are retrieved from pre-trained Word2Vec models.
+    
+    One-hot encodings are created based on the size of the underlying
+    Word2Vec model or, if specified, using a custom VocabularyIndex.
+    """
 
     def __init__(self, word2vec_model, tokens_lists=None, num_tokens_per_sample=30, vocab_index=None):
 
@@ -28,8 +36,14 @@ class TokenVectorizer():
 
     @staticmethod
     def load_from_pickle_file(file_name):
+        """Loads a TokenVectorizer instance from a pickle file."""
         with open(file_name, "rb") as in_file:
             return pickle.load(in_file)
+
+    def save_to_pickle_file(self, file_name):
+        """Saves a TokenVectorizer instance to a pickle file."""
+        with open(file_name, "wb") as out_file:
+            pickle.dump(self, out_file, protocol=4)
 
     def get_embedded_vector_length(self):
         return self.word2vec_model.vector_size
@@ -41,26 +55,40 @@ class TokenVectorizer():
             return len(self.word2vec_model.vocab.keys())
 
     def get_label_from_token(self, token):
+        """Returns an integer label for the specified token."""
         if self.vocab_index is not None:
             return self.vocab_index.word2index[token]
         else:
             return self.word2vec_model.vocab[token].index
 
     def get_token_from_label(self, label):
+        """Returns a token from the specified integer label."""
         if self.vocab_index is not None:
             return self.vocab_index.index2word[label]
         else:
             return self.word2vec_model.index2word[label]
 
     def truncate_tokens_lists(self):
+        """Truncates any sequences with more than num_tokens_per_sample tokens."""
         for i, tokens_list in enumerate(self.tokens_lists):
             self.tokens_lists[i] = tokens_list[:self.num_tokens_per_sample - 1]
 
     def add_end_of_sequence_tokens(self):
+        """
+        Adds an end-of-sequence token to all token sequences so that Seq2SeqModels
+        can be trained to predict a sequence's length. By default, the EOS token is '.'
+        """
         for tokens_list in self.tokens_lists:
             tokens_list.append(self.end_of_sequence_token)
 
     def get_embeddings(self):
+        """
+        Returns a 3D numpy array containing vector embeddings for all tokens that
+        are supported by the underlying Word2Vec model.
+        
+        The return value is padded with zeros and has dimensions
+        [num_samples, num_tokens_per_sample, embedded_vector_length].
+        """
         if self.embedded_tokens is None:
             self.embedded_tokens = np.zeros([self.num_samples, self.num_tokens_per_sample, self.embedded_vector_length])
             for i, tokens_list in enumerate(self.tokens_lists):
@@ -74,6 +102,13 @@ class TokenVectorizer():
         return self.embedded_tokens
 
     def get_word2vec_labels(self):
+        """
+        Returns a 2D numpy array containing integer labels for all tokens that
+        are supported by the underlying Word2Vec model or VocabularyIndex.
+
+        The return value is padded with -1 and has dimensions
+        [num_samples, num_tokens_per_sample].
+        """
         # Use a default value of -1 for tokens which should not be one-hot encoded.
         labels = -1 * np.ones([self.num_samples, self.num_tokens_per_sample], dtype=int)
         for i, tokens_list in enumerate(self.tokens_lists):
@@ -87,6 +122,16 @@ class TokenVectorizer():
         return labels
 
     def get_one_hot_encodings(self):
+        """
+        Returns a 3D numpy array containing one-hot encodings for all tokens that
+        are supported by the underlying Word2Vec model or VocabularyIndex.
+
+        One-hot encodings are created based on the size of the underlying
+        Word2Vec model or, if specified, using a custom VocabularyIndex.
+
+        The return value is padded with zeros and has dimensions
+        [num_samples, num_tokens_per_sample, num_words_in_vocab].
+        """
         if self.one_hot_encodings is None:
             labels = self.get_word2vec_labels()
             encodings = np.zeros([self.num_samples, self.num_tokens_per_sample, self.num_words_in_vocab], dtype=bool)
@@ -98,6 +143,10 @@ class TokenVectorizer():
         return self.one_hot_encodings
 
     def decode_single_one_hot_sample(self, encodings):
+        """
+        Converts a sequence of one-hot encoded tokens to a string using the
+        underlying Word2Vec model or VocabularyIndex.
+        """
         words = []
         for i in range(self.num_tokens_per_sample):
             word_label_one_hot = encodings[i,:]
@@ -110,6 +159,10 @@ class TokenVectorizer():
         return " ".join(words)
 
     def decode_multiple_one_hot_samples(self, encodings):
+        """
+        Converts multiples sequences of one-hot encoded tokens to a list of strings
+        using the underlying Word2Vec model or VocabularyIndex.
+        """
         decoded_samples = []
         num_samples = encodings.shape[0]
         for i in range(num_samples):
@@ -118,15 +171,13 @@ class TokenVectorizer():
         return decoded_samples
 
     def save_embeddings_to_pickle_file(self, file_name):
+        """Saves all embedded token vectors to a pickle file."""
         embeddings = self.get_embeddings()
         with open(file_name, "wb") as out_file:
             pickle.dump(embeddings, out_file, protocol=4)
     
     def save_one_hot_encodings_to_pickle_file(self, file_name):
+        """Saves all one-hot encoded token vectors to a pickle file."""
         encodings = self.get_one_hot_encodings()
         with open(file_name, "wb") as out_file:
             pickle.dump(encodings, out_file, protocol=4)
-
-    def save_to_pickle_file(self, file_name):
-        with open(file_name, "wb") as out_file:
-            pickle.dump(self, out_file, protocol=4)
