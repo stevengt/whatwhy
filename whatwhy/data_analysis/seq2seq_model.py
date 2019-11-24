@@ -46,14 +46,16 @@ class Seq2SeqModel():
         model.add( Input(shape=input_shape) )
         model.add( Masking(mask_value=0.0 ) )
 
-        # model.add( Dense( num_units_in_hidden_layer ) )
-        model.add( Dense( num_units_in_hidden_layer * 2) )
-        model.add( Dense( num_units_in_hidden_layer * 2) )
-
-        model.add( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) 
+        # model.add( Dense( num_units_in_hidden_layer * 2) )
+        # model.add( Dense( num_units_in_hidden_layer * 2) )
+        # model.add( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) 
+        # model.add( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) 
         # model.add( Bidirectional( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) )
+        model.add( Bidirectional( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) )
+        model.add( Bidirectional( LSTM( num_units_in_hidden_layer, return_sequences=True ) ) )
+
         if use_dropout:
-            model.add( Dropout(0.2) )
+            model.add( Dropout(0.4) )
         model.add( TimeDistributed( Dense(self.num_token_categories) ) )
 
         model.add( Masking(mask_value=0.0 ) )

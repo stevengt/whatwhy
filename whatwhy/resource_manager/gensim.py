@@ -30,6 +30,7 @@ def create_and_save_word2vec_model( tokens_lists,
     gensim_resources_folder = get_gensim_resources_folder()
     model_file_name = os.path.join(gensim_resources_folder, "whatwhy-custom.kv")
 
+    tokens_lists.append(["." for i in range(min_token_frequency)]) # Default End-of-Sequence token.
     model = gensim.models.Word2Vec( tokens_lists,
                                     size=embedded_vector_size,
                                     window=window,
