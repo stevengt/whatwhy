@@ -11,7 +11,7 @@ def get_text_as_list(text):
 def get_default_token(word2vec_model):
     """
     Returns the token from a Word2Vec model to use as a default
-    for padding and end-of-sequence marking.
+    for end-of-sequence marking.
     """
     return "." if "." in word2vec_model.vocab.keys() else word2vec_model.index2word[0]
 

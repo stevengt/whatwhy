@@ -69,7 +69,10 @@ class TokenVectorizer():
             return self.word2vec_model.index2word[label]
 
     def truncate_tokens_lists(self):
-        """Truncates any sequences with more than num_tokens_per_sample tokens."""
+        """
+        Truncates any sequences with more than num_tokens_per_sample - 1 tokens.
+        The last token in all sequences is reserved for the end-of-sequence token.
+        """
         for i, tokens_list in enumerate(self.tokens_lists):
             self.tokens_lists[i] = tokens_list[:self.num_tokens_per_sample - 1]
 
@@ -160,7 +163,7 @@ class TokenVectorizer():
 
     def decode_multiple_one_hot_samples(self, encodings):
         """
-        Converts multiples sequences of one-hot encoded tokens to a list of strings
+        Converts multiple sequences of one-hot encoded tokens to a list of strings
         using the underlying Word2Vec model or VocabularyIndex.
         """
         decoded_samples = []
