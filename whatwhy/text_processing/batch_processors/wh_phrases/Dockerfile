@@ -46,15 +46,15 @@ WORKDIR /opt/whatwhy
 COPY . .
 RUN pip install .
 
-RUN echo "whatwhy --process     wh-phrases \
-                  --source-type $WHATWHY_SOURCE_TYPE \
-                  --source-name $WHATWHY_SOURCE_NAME \
-                  --dest-type   $WHATWHY_DEST_TYPE \
-                  --dest-name   $WHATWHY_DEST_NAME \
-                  --id-col      $WHATWHY_ID_COL_NAME \
-                  --source-col  $WHATWHY_SOURCE_COL_NAME &" > start-whatwhy && \
+RUN echo "whatwhy-text --process     wh-phrases \
+                       --source-type $WHATWHY_SOURCE_TYPE \
+                       --source-name $WHATWHY_SOURCE_NAME \
+                       --dest-type   $WHATWHY_DEST_TYPE \
+                       --dest-name   $WHATWHY_DEST_NAME \
+                       --id-col      $WHATWHY_ID_COL_NAME \
+                       --source-col  $WHATWHY_SOURCE_COL_NAME &" > start-whatwhy && \
     chmod +x start-whatwhy
-RUN echo "pkill whatwhy" > stop-whatwhy && chmod +x stop-whatwhy
+RUN echo "pkill whatwhy-text" > stop-whatwhy && chmod +x stop-whatwhy
 RUN echo "./stop-whatwhy && ./start-whatwhy" > restart-whatwhy && chmod +x restart-whatwhy
 
 # Restart the process every 30 minutes to prevent it from getting stuck.

@@ -1,30 +1,12 @@
-import numpy as np
+import argparse
 from whatwhy import QUESTION_WORDS
 from whatwhy.text_processing.helper_methods import get_df_from_file
-from whatwhy.resource_manager import get_google_news_model, get_glove_wiki_gigaword_model, get_custom_word2vec_model, create_and_save_word2vec_model
-from .helper_methods import get_text_as_list, remove_uncommon_whatwhy_tokens, get_token_counts
+from whatwhy.resource_manager import get_google_news_model, get_whatwhy_predictor_vectorizers_folder, get_whatwhy_predictor_model_folder
+from .helper_methods import get_text_as_list, remove_uncommon_whatwhy_tokens
 from .whatwhy_predictor import WhatWhyPredictor
 from .vocab_index import VocabularyIndex
 
-# --------------------------------------
-
-csv_file_name = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/financial-news-dataset/wh_phrases.csv"
-
-vectorizers_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/financial-news-dataset/vectorizers"
-# vectorizers_dir = "/home/ubuntu/whatwhy-data/vectorizers"
-
-model_dir = "/home/stevengt/Documents/code/whatwhy-data/News-Articles/financial-news-dataset/tf-model"
-# model_dir = "/home/ubuntu/whatwhy-data/tf-model"
-
-num_samples = 10000
-min_num_tokens_per_sample = 4
-max_num_tokens_per_sample = 10
-epochs = 100
-batch_size = 16
-
-# --------------------------------------
-
-def get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples, max_num_tokens_per_sample, min_token_frequency):
+def get_raw_what_and_why_tokens_from_csv(csv_file_name, min_num_tokens_per_sample, max_num_tokens_per_sample, min_token_frequency):
     df = get_df_from_file(csv_file_name)
     df = df.drop_duplicates(subset=QUESTION_WORDS)
 
@@ -40,75 +22,77 @@ def get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples, max_num_tok
     what_tokens = []
     why_tokens = []
 
-    count = 0
     for i in range(len(tmp_what_tokens)):
         if min_num_tokens_per_sample <= len(tmp_what_tokens[i]):
             if min_num_tokens_per_sample <= len(tmp_why_tokens[i]):
                 what_tokens.append(tmp_what_tokens[i][:max_num_tokens_per_sample])
                 why_tokens.append(tmp_why_tokens[i][:max_num_tokens_per_sample])
-                count += 1
-                if count >= num_samples:
-                    break
 
     return what_tokens, why_tokens
 
-def create_and_save_token_vectorizers_and_train_and_test_data(what_tokens, why_tokens, max_num_tokens_per_sample, vectorizers_dir):
-    word2vec_model = get_google_news_model()  # get_custom_word2vec_model()get_glove_wiki_gigaword_model(100) 
+def create_and_save_whatwhy_predictor(what_tokens, why_tokens, max_num_tokens_per_sample):
+    vectorizers_dir = get_whatwhy_predictor_vectorizers_folder()
+    word2vec_model = get_google_news_model()
     vocab_index = VocabularyIndex.from_lists(why_tokens)
-    w2w_model = WhatWhyPredictor(word2vec_model, max_num_tokens_per_sample=max_num_tokens_per_sample, vocab_index=vocab_index)
-    w2w_model.save_token_vectorizers_to_pickle_files(vectorizers_dir, what_tokens, why_tokens)
-    w2w_model.save_train_and_test_data_to_pickle_files(vectorizers_dir)
+    predictor = WhatWhyPredictor(word2vec_model, max_num_tokens_per_sample=max_num_tokens_per_sample, vocab_index=vocab_index)
+    predictor.save_token_vectorizers_to_pickle_files(vectorizers_dir, what_tokens, why_tokens)
+    predictor.save_train_and_test_data_to_pickle_files(vectorizers_dir)
+    return predictor
 
-def load_what_why_predictor(vectorizers_dir, model_dir=None):
-    w2w_model = WhatWhyPredictor()
-    w2w_model.load_token_vectorizers_from_pickle_files(vectorizers_dir)
-    w2w_model.load_train_and_test_data_from_pickle_files(vectorizers_dir)
-    if model_dir is not None:
-        w2w_model.load_seq2seq_model_from_saved_tf_model(model_dir)
-    return w2w_model
+def train_and_save_whatwhy_predictor(predictor, epochs, batch_size):
+    model_dir = get_whatwhy_predictor_model_folder()
+    predictor.fit_tokens(epochs=epochs, batch_size=batch_size)
+    predictor.save_model(model_dir)
 
-def create_and_save_whatwhy_word2vec_model():
-    min_token_frequency = 1
-    what_tokens, why_tokens = get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples=1e99, max_num_tokens_per_sample=100, min_token_frequency=min_token_frequency)
-    all_tokens = what_tokens
-    all_tokens.extend(why_tokens)
-    create_and_save_word2vec_model( all_tokens,
-                                    embedded_vector_size=200,
-                                    min_token_frequency=min_token_frequency,
-                                    window=5,
-                                    workers=20,
-                                    iter=10000 )
+def load_whatwhy_predictor(is_pretrained=False):
+    vectorizers_dir = get_whatwhy_predictor_vectorizers_folder()
+    model_dir = get_whatwhy_predictor_model_folder()
+    predictor = WhatWhyPredictor()
+    predictor.load_token_vectorizers_from_pickle_files(vectorizers_dir)
+    predictor.load_train_and_test_data_from_pickle_files(vectorizers_dir)
+    if is_pretrained:
+        predictor.load_seq2seq_model_from_saved_tf_model(model_dir)
+    return predictor
 
-# df = get_df_from_file(csv_file_name)
-# df = df.drop_duplicates(subset=["Processed Text"])
-# df["Processed Text"] = df["Processed Text"].apply(get_text_as_list)
-# token_counts = get_token_counts(df, "Processed Text")
-# df["Processed Text"] = df["Processed Text"].apply(lambda x: [token for token in x if token_counts[token] >= 100 ])
-# all_tokens = df["Processed Text"].tolist()
-# create_and_save_word2vec_model( all_tokens,
-#                                 embedded_vector_size=100,
-#                                 min_token_frequency=100,
-#                                 window=10,
-#                                 workers=10,
-#                                 iter=1000 )
+def main():
+    parser = argparse.ArgumentParser(description="This is a CLI for training and using a model to predict sequences of 'why' text from input 'what' text.")
 
+    arggroup = parser.add_mutually_exclusive_group(required=True)
+    arggroup.add_argument("--train", action="store_true", help="Train a prediction model using a supplied CSV file or previously loaded data set.")
+    arggroup.add_argument("--predict", nargs="+", default=None, help="Uses a previously trained model to predict a sequence of 'why' text from the input 'what' text.")
+    arggroup.add_argument("--compare-test", action="store_true", help="Uses a previously trained model to compare its predictions against its testing data set.")
+    arggroup.add_argument("--compare-train", action="store_true", help="Uses a previously trained model to compare its predictions against its training data set.")
 
-# create_and_save_whatwhy_word2vec_model()
-# model = get_custom_word2vec_model()
-# print(model.vector_size)
-# print(len(model.vocab.keys()))
+    parser.add_argument("-csv", "--csv-file-name", default=None, help="Name of local CSV file containing a data set for model training. If left blank, the most recently loaded data set will be used.")
+    parser.add_argument("--min-token-frequency", type=int, default=30, help="The minimum number of times a token should occur in the dataset to be used for training a WhatWhyPredictor model.") 
+    parser.add_argument("-min-tokens", "--min-tokens-per-sample", type=int, default=4, help="The minimum number of tokens a sample should contain to be used for training a WhatWhyPredictor model.")
+    parser.add_argument("-max-tokens", "--max-tokens-per-sample", type=int, default=10, help="The maximum number of tokens a sample should contain for training a WhatWhyPredictor model. Any extra tokens will be truncated.")
+    parser.add_argument("-bs", "--batch-size", type=int, default=16)
+    parser.add_argument("--epochs", type=int, default=100)
 
-# what_tokens, why_tokens = get_raw_what_and_why_tokens_from_csv(csv_file_name, num_samples, max_num_tokens_per_sample, min_token_frequency=30)
-# print(len(what_tokens))
-# print(len(why_tokens))
-# create_and_save_token_vectorizers_and_train_and_test_data(what_tokens, why_tokens, max_num_tokens_per_sample, vectorizers_dir)
+    args = parser.parse_args()
 
-# w2w_model = load_what_why_predictor(vectorizers_dir)
-# w2w_model.fit_tokens(epochs=epochs, batch_size=batch_size)
-# w2w_model.save_model(model_dir)
+    if args.train:
+        predictor = None
+        if args.csv_file_name is not None:
+            what_tokens, why_tokens = get_raw_what_and_why_tokens_from_csv( args.csv_file_name,
+                                                                            args.min_tokens_per_sample,
+                                                                            args.max_tokens_per_sample,
+                                                                            args.min_token_frequency )
+            predictor = create_and_save_whatwhy_predictor( what_tokens,
+                                                           why_tokens,
+                                                           args.max_tokens_per_sample )
+        else:
+            predictor = load_whatwhy_predictor()
+        train_and_save_whatwhy_predictor(predictor, args.epochs, args.batch_size)
+    else:
+        predictor = load_whatwhy_predictor(is_pretrained=True)
+        if args.predict is not None:
+            predictor.predict(args.predict)
+        elif args.compare_test:
+            predictor.compare_test_set_to_predictions()
+        elif args.compare_train:
+            predictor.compare_train_set_to_predictions()
 
-w2w_model = load_what_why_predictor(vectorizers_dir, model_dir)
-w2w_model.compare_test_set_to_predictions(max_num_examples=100)
-# w2w_model.compare_train_set_to_predictions(max_num_examples=None)
-# predictions = w2w_model.predict_all(what_tokens)
-# w2w_model.compare_predictions_to_actual(predictions, [ " ".join(tokens) for tokens in why_tokens ])
+if __name__ == "__main__":
+    main()

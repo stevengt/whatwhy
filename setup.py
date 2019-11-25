@@ -18,12 +18,12 @@ setup(
         "scikit-learn >= 0.21.3",
         "tensorflow >= 2.0.0",
         "textblob >= 0.15.3",
-        "twython >= 3.7.0",
     ],
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "whatwhy = whatwhy.text_processing.main:main"
+            "whatwhy-text = whatwhy.text_processing.main:main",
+            "whatwhy-model = whatwhy.data_analysis.main:main"
         ]
     }
 )

@@ -1,3 +1,4 @@
 from .nltk import configure_nltk
 from .jamspell import get_jamspell_model_file_name
 from .gensim import get_custom_word2vec_model, create_and_save_word2vec_model, get_glove_wiki_gigaword_model, get_google_news_model
+from .whatwhy_predictor import get_whatwhy_predictor_vectorizers_folder, get_whatwhy_predictor_model_folder
