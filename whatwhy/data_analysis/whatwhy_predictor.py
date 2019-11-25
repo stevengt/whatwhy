@@ -17,7 +17,9 @@ class WhatWhyPredictor():
     or saved and loaded from files using the save/load methods.
     """
 
-    def __init__(self, word2vec_model=None, max_num_tokens_per_sample=20, vocab_index=None):
+    def __init__( self, word2vec_model=None,
+                        max_num_tokens_per_sample=10,
+                        vocab_index=None ):
         """
         Creates a WhatWhyPredictor instance using the specified parameters.
         If no parameters are specified, then they should be loaded from

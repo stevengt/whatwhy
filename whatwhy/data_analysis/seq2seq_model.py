@@ -14,7 +14,11 @@ class Seq2SeqModel():
     using a specified data set.
     """
 
-    def __init__(self, X_train=None, X_test=None, Y_train=None, Y_test=None, pretrained_model=None):
+    def __init__(self, X_train=None,
+                       X_test=None,
+                       Y_train=None,
+                       Y_test=None,
+                       pretrained_model=None ):
         """
         Params:
             X_train, X_test  : An array of embedded input data with dimensions [num_samples, num_tokens_per_sample, embedded_vector_length].

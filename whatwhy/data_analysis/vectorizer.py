@@ -12,8 +12,20 @@ class TokenVectorizer():
     gensim Word2Vec model or, if specified, using a custom VocabularyIndex.
     """
 
-    def __init__(self, word2vec_model, tokens_lists=None, num_tokens_per_sample=30, vocab_index=None):
-
+    def __init__( self, word2vec_model,
+                        tokens_lists=None,
+                        num_tokens_per_sample=10,
+                        vocab_index=None ):
+        """
+        Params:
+            word2vec_model        : A pre-trained gensim Word2Vec model.
+            tokens_lists          : [Optional] A list of token sequences to vectorize.
+            num_tokens_per_sample : Maximum number of tokens to include in a sample sequence.
+                                    Any extra tokens will be truncated.
+            vocab_index           : [Optional] A pre-built VocabularyIndex of the data set. This can
+                                    help reduce the size of one-hot encoded words in the
+                                    vocabulary, compared to that of pre-trained word2vec models.
+        """
         self.word2vec_model = word2vec_model
         self.num_tokens_per_sample = num_tokens_per_sample
         self.vocab_index = vocab_index
