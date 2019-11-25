@@ -15,7 +15,8 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
 
     This is intended to be run from within a Docker network, since
     access to a Stanford CoreNLP server API at http://corenlp-service:9000
-    is required.
+    is required. Please see the readme file at https://github.com/stevengt/whatwhy
+    for more information.
     """
 
     def __init__(self, source,

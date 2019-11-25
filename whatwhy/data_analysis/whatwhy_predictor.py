@@ -80,7 +80,7 @@ class WhatWhyPredictor():
         
         The following instance fields should be initialized or loaded before calling this method.
             word2vec_model
-            num_tokens_per_sample 
+            max_num_tokens_per_sample 
             seq2seq_model
             decoder
         """
@@ -93,7 +93,7 @@ class WhatWhyPredictor():
         
         The following instance fields should be initialized or loaded before calling this method.
             word2vec_model
-            num_tokens_per_sample 
+            max_num_tokens_per_sample 
             seq2seq_model
             decoder
         """
@@ -140,22 +140,29 @@ class WhatWhyPredictor():
         """
         Returns TokenVectorizers for the lists of what/why token sequences.
         
-        The instance fields 'word2vec_model', 'num_tokens_per_sample', and
+        The instance fields 'word2vec_model', 'max_num_tokens_per_sample', and
         optionally 'vocab_index' should be initialized before calling this method.
         """
-        if self.what_token_vectorizer is None:
-            self.what_token_vectorizer = TokenVectorizer( word2vec_model=self.word2vec_model,
-                                                          tokens_lists=lists_of_what_tokens,
-                                                          num_tokens_per_sample=self.max_num_tokens_per_sample,
-                                                          vocab_index=self.vocab_index )
-
-        if self.why_token_vectorizer is None:
-            self.why_token_vectorizer = TokenVectorizer( word2vec_model=self.word2vec_model,
-                                                         tokens_lists=lists_of_why_tokens,
-                                                         num_tokens_per_sample=self.max_num_tokens_per_sample,
-                                                         vocab_index=self.vocab_index )
-
+        if self.what_token_vectorizer is None or self.why_token_vectorizer is None:
+            self.set_what_and_why_token_vectorizers_from_lists(lists_of_what_tokens, lists_of_why_tokens)
         return self.what_token_vectorizer, self.why_token_vectorizer
+
+    def set_what_and_why_token_vectorizers_from_lists(self, lists_of_what_tokens, lists_of_why_tokens):
+        """
+        Initializes TokenVectorizers for the lists of what/why token sequences.
+        
+        The instance fields 'word2vec_model', 'max_num_tokens_per_sample', and
+        optionally 'vocab_index' should be initialized before calling this method.
+        """
+        self.what_token_vectorizer = TokenVectorizer( word2vec_model=self.word2vec_model,
+                                                      tokens_lists=lists_of_what_tokens,
+                                                      num_tokens_per_sample=self.max_num_tokens_per_sample,
+                                                      vocab_index=self.vocab_index )
+        
+        self.why_token_vectorizer = TokenVectorizer( word2vec_model=self.word2vec_model,
+                                                     tokens_lists=lists_of_why_tokens,
+                                                     num_tokens_per_sample=self.max_num_tokens_per_sample,
+                                                     vocab_index=self.vocab_index )
 
     def get_train_and_test_data( self, lists_of_what_tokens=None,
                                        lists_of_why_tokens=None,

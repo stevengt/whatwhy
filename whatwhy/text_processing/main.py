@@ -27,6 +27,8 @@ Supported batch processing tasks are:
     - wh-phrases    : Extracts the WH phrases (who, what, when, where, why, how) from text.
                       This is intended to be run from within a Docker network, since access to
                       a Stanford CoreNLP server API at http://corenlp-service:9000 is required.
+                      Please see the readme file at https://github.com/stevengt/whatwhy
+                      for more information.
     - tokenize      : Tokenizes and standardizes text-segments.
     - tokenize-wh-phrases : This is identical to 'tokenize', except it tokenizes the 
                             columns 'who', 'what', 'when', 'where', 'why', 'how'
