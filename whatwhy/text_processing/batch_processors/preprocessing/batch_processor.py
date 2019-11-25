@@ -11,6 +11,7 @@ def get_spell_checker():
     return spell_checker
 
 class BatchPreprocessor(BatchProcessorBase):
+    """Preprocesses text by removing URL's and auto-correcting common spelling errors."""
 
     def __init__(self, source,
                        dest,
@@ -29,8 +30,7 @@ class BatchPreprocessor(BatchProcessorBase):
 
     def get_batch_results(self, batch):
         batch_as_df = get_df_from_csv_string(batch)
-        batch_as_df[self.dest_col_name] = batch_as_df[self.source_col_name].apply( self.remove_reply_tag_from_tweet_text) \
-                                                                           .apply( self.remove_url ) \
+        batch_as_df[self.dest_col_name] = batch_as_df[self.source_col_name].apply( self.remove_url ) \
                                                                            .apply( self.autocorrect_spelling )
         results_df_cols = [self.id_col_name, self.dest_col_name]
         results_df_cols.extend(self.include_cols)
@@ -50,18 +50,6 @@ class BatchPreprocessor(BatchProcessorBase):
             url_regex = r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))'''
             text = re.sub(url_regex, "", text, flags=re.MULTILINE) 
             return text 
-        except:
-            return text
-
-    def remove_reply_tag_from_tweet_text(self, text):
-        if text is None or text is np.nan:
-            return text
-        try:
-            reply_tag = re.match("@[^\s]+[\s]+", text)
-            if reply_tag is not None:
-                reply_tag = reply_tag.group(0)
-                text = text.replace(reply_tag, "")
-            return text
         except:
             return text
 

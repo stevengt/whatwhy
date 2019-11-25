@@ -2,6 +2,7 @@ from whatwhy.text_processing.batch_processors import BatchProcessorBase
 from whatwhy.text_processing.helper_methods import get_df_from_csv_string
 
 class BatchTransferer(BatchProcessorBase):
+    """Transfers a batch of data without changing its contents."""
 
     def __init__(self, source,
                        dest,

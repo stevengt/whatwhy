@@ -7,6 +7,7 @@ logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
 class BatchConsolidator (BatchProcessorBase):
+    """Consolidates data from multiple CSV files into a single CSV file."""
 
     def __init__(self, source,
                        dest,

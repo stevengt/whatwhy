@@ -77,7 +77,13 @@ class BatchTokenizer(BatchProcessorBase):
         return [ token for token in tokens if len(token) > 2 ]
 
 class BatchWHPhrasesTokenizer(BatchTokenizer):
-    
+    """
+    This is identical to the BatchTokenizer class, except it
+    tokenizes the columns 'who', 'what', 'when', 'where', 'why', 'how'
+    and stores the results in 'who tokens', 'what tokens', 
+    'when tokens', 'where tokens', 'why tokens', and 'how tokens'.
+    """
+
     def get_batch_results(self, batch):
         batch_as_df = get_df_from_csv_string(batch)
         results_df_cols = [self.id_col_name]

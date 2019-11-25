@@ -9,6 +9,13 @@ from whatwhy.text_processing.batch_processors import BatchProcessorBase
 from whatwhy.text_processing.helper_methods import get_df_from_csv_string, get_csv_string_from_df
 
 class WHPhrasesBatchProcessor(BatchProcessorBase):
+    """
+    Extracts the WH phrases (who, what, when, where, why, how) from text.
+
+    This is intended to be run from within a Docker network, since
+    access to a Stanford CoreNLP server API at http://corenlp-service:9000
+    is required.
+    """
 
     def __init__(self, source,
                        dest,
