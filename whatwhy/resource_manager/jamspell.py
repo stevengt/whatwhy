@@ -10,6 +10,7 @@ logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
 def get_jamspell_model_file_name():
+    """Returns the file path of the jamspell language model, downloading it if necessary."""
     configure_jamspell()
     jamspell_model_file_name = os.path.join(get_jamspell_resources_folder(), "en.bin")
     if not os.path.exists(jamspell_model_file_name):

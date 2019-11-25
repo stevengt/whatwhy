@@ -7,6 +7,7 @@ logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
 def configure_nltk():
+    """Downloads any required NLTK data if not already downloaded."""
     nltk_resources_folder = get_nltk_resources_folder()
     nltk.data.path.append(nltk_resources_folder)
 

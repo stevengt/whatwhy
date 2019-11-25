@@ -12,21 +12,16 @@ from whatwhy import get_resources_folder
 logging.basicConfig(level="INFO")
 logger = logging.getLogger(__name__)
 
-def get_custom_word2vec_model():
-    gensim_resources_folder = get_gensim_resources_folder()
-    model_file_name = os.path.join(gensim_resources_folder, "whatwhy-custom.kv")
-    if not os.path.exists(model_file_name):
-        raise FileNotFoundError("Custom word2vec model was not found.")
-    model = gensim.models.KeyedVectors.load_word2vec_format(model_file_name)
-    return model
-
 def create_and_save_word2vec_model( tokens_lists,
                                     embedded_vector_size=100,
                                     min_token_frequency=10,
                                     window=10,
                                     workers=10,
                                     iter=10 ):
-
+    """
+    Creates and saves a custom gensim Word2Vec model from
+    a specified list of token sequences.
+    """
     gensim_resources_folder = get_gensim_resources_folder()
     model_file_name = os.path.join(gensim_resources_folder, "whatwhy-custom.kv")
 
@@ -41,7 +36,20 @@ def create_and_save_word2vec_model( tokens_lists,
         os.remove(model_file_name)
     model.wv.save_word2vec_format(model_file_name)
 
+def get_custom_word2vec_model():
+    """
+    Loads a gensim Word2Vec model that was previously created
+    with the method create_and_save_word2vec_model().
+    """
+    gensim_resources_folder = get_gensim_resources_folder()
+    model_file_name = os.path.join(gensim_resources_folder, "whatwhy-custom.kv")
+    if not os.path.exists(model_file_name):
+        raise FileNotFoundError("Custom word2vec model was not found. Please run create_and_save_word2vec_model() first.")
+    model = gensim.models.KeyedVectors.load_word2vec_format(model_file_name)
+    return model
+
 def get_google_news_model():
+    """Returns the 300d GoogleNews gensim Word2Vec model, downloading it if necessary."""
     gensim_resources_folder = get_gensim_resources_folder()
     model_file_name = os.path.join(gensim_resources_folder, "GoogleNews-vectors-negative300.bin")
     if not os.path.exists(model_file_name):
@@ -50,24 +58,11 @@ def get_google_news_model():
     model = gensim.models.KeyedVectors.load_word2vec_format(model_file_name, binary=True)
     return model
 
-def download_google_news_model():
-    logger.info("Downloading Google-News model.")
-    model_url = "https://s3.amazonaws.com/dl4j-distribution/GoogleNews-vectors-negative300.bin.gz"
-
-    file_name = os.path.join(get_gensim_resources_folder(), "GoogleNews-vectors-negative300.bin")
-    zip_file_name = os.path.join(get_gensim_resources_folder(), "GoogleNews-vectors-negative300.bin.gz")
-
-    with requests.get(model_url, stream=True) as compressed_model:
-        with open(zip_file_name, "wb") as zip_file:
-            zip_file.write(compressed_model.content)
-
-    with gzip.open(zip_file_name, "rb") as zip_file:
-        with open(file_name, "wb") as model:
-            shutil.copyfileobj(zip_file, model)
-    
-    os.remove(zip_file_name)
-
 def get_glove_wiki_gigaword_model(num_dimensions):
+    """
+    Returns the glove-wiki-gigaword gensim Word2Vec model in either
+    50, 100, 200, or 300 dimensions, downloading it if necessary.
+    """
     valid_dimensions = (50, 100, 200, 300)
     if num_dimensions not in valid_dimensions:
         raise ValueError(f"num_dimensions must be in {valid_dimensions}.")
@@ -86,6 +81,23 @@ def get_gensim_resources_folder():
     if not os.path.isdir(gensim_resources_folder):
         os.mkdir(gensim_resources_folder)
     return gensim_resources_folder
+
+def download_google_news_model():
+    logger.info("Downloading Google-News model.")
+    model_url = "https://s3.amazonaws.com/dl4j-distribution/GoogleNews-vectors-negative300.bin.gz"
+
+    file_name = os.path.join(get_gensim_resources_folder(), "GoogleNews-vectors-negative300.bin")
+    zip_file_name = os.path.join(get_gensim_resources_folder(), "GoogleNews-vectors-negative300.bin.gz")
+
+    with requests.get(model_url, stream=True) as compressed_model:
+        with open(zip_file_name, "wb") as zip_file:
+            zip_file.write(compressed_model.content)
+
+    with gzip.open(zip_file_name, "rb") as zip_file:
+        with open(file_name, "wb") as model:
+            shutil.copyfileobj(zip_file, model)
+    
+    os.remove(zip_file_name)
 
 def download_glove_wiki_gigaword_models():
     logger.info("Downloading glove-wiki-gigaword models.")
