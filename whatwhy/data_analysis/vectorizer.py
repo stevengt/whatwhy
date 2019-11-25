@@ -6,10 +6,10 @@ class TokenVectorizer():
     """
     Converts sequences of tokens to/from vector representations.
     
-    Vector embeddings are retrieved from pre-trained Word2Vec models.
+    Vector embeddings are retrieved from pre-trained gensim Word2Vec models.
     
     One-hot encodings are created based on the size of the underlying
-    Word2Vec model or, if specified, using a custom VocabularyIndex.
+    gensim Word2Vec model or, if specified, using a custom VocabularyIndex.
     """
 
     def __init__(self, word2vec_model, tokens_lists=None, num_tokens_per_sample=30, vocab_index=None):
