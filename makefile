@@ -12,6 +12,12 @@ build:
 	docker build --file ${WH_PHRASE_EXTRACTOR_DOCKER_FILE} \
 				 --build-arg AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
 				 --build-arg AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+				 --build-arg WHATWHY_SOURCE_TYPE=${WHATWHY_SOURCE_TYPE} \
+				 --build-arg WHATWHY_SOURCE_NAME=${WHATWHY_SOURCE_NAME} \
+				 --build-arg WHATWHY_DEST_TYPE=${WHATWHY_DEST_TYPE} \
+				 --build-arg WHATWHY_DEST_NAME=${WHATWHY_DEST_NAME} \
+				 --build-arg WHATWHY_ID_COL_NAME=${WHATWHY_ID_COL_NAME} \
+				 --build-arg WHATWHY_SOURCE_COL_NAME=${WHATWHY_SOURCE_COL_NAME} \
 				 -t wh-phrase-extractor .
 	docker build --file ${CORE_NLP_SERVER_DOCKER_FILE} -t corenlp-server .
 

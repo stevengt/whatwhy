@@ -5,6 +5,7 @@ from Giveme5W1H.extractor.document import Document
 from Giveme5W1H.extractor.extractor import MasterExtractor
 from Giveme5W1H.extractor.extractors import action_extractor, cause_extractor, method_extractor
 from whatwhy import QUESTION_WORDS
+from whatwhy.resource_manager.nltk import configure_nltk
 from whatwhy.text_processing.batch_processors import BatchProcessorBase
 from whatwhy.text_processing.helper_methods import get_df_from_csv_string, get_csv_string_from_df
 
@@ -29,8 +30,8 @@ class WHPhrasesBatchProcessor(BatchProcessorBase):
                             id_col_name=id_col_name,
                             source_col_name=source_col_name,
                             include_cols=include_cols)
-
-        sleep(60)
+        configure_nltk()
+        sleep(60) # Wait for Stanford CoreNLP server to start.
         extractor_preprocessor = Preprocessor("http://corenlp-service:9000")
         extractors = [
             action_extractor.ActionExtractor(),
