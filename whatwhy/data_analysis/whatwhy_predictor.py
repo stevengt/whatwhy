@@ -54,6 +54,15 @@ class WhatWhyPredictor():
                                             num_tokens_per_sample=self.max_num_tokens_per_sample,
                                             vocab_index=self.vocab_index )
 
+    @staticmethod
+    def load_from_pickle_file(dir_name):
+        """
+        Loads a WhatWhyPredictor instance from a pickle
+        file 'whatwhy_predictor.p' in the specified directory.
+        """
+        with open( os.path.join(dir_name, "whatwhy_predictor.p") , "rb" ) as in_file:
+            return pickle.load(in_file)
+
     def fit_tokens( self, lists_of_what_tokens=None,
                           lists_of_why_tokens=None,
                           epochs=1,
@@ -169,7 +178,17 @@ class WhatWhyPredictor():
                                                                                                                             random_state=random_state )
         return self.X_train, self.X_test, self.Y_train, self.Y_test, self.indeces_train, self.indeces_test
 
-    def save_model(self, model_dir):
+    def save_to_pickle_file(self, dir_name):
+        """
+        Saves the WhatWhyPredictor instance to a pickle
+        file 'whatwhy_predictor.p' in the specified directory.
+        """
+        if not os.path.isdir(dir_name):
+            os.mkdir(dir_name)
+        with open( os.path.join(dir_name, "whatwhy_predictor.p") , "wb" ) as out_file:
+            pickle.dump(self, out_file, protocol=4)
+
+    def save_seq2seq_model(self, model_dir):
         """
         Saves the underlying tensorflow.keras model's weights to
         a file 'model.h5' in the specified directory.

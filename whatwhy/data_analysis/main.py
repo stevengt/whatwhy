@@ -31,27 +31,21 @@ def get_raw_what_and_why_tokens_from_csv(csv_file_name, min_num_tokens_per_sampl
     return what_tokens, why_tokens
 
 def create_and_save_whatwhy_predictor(what_tokens, why_tokens, max_num_tokens_per_sample):
-    vectorizers_dir = get_whatwhy_predictor_vectorizers_folder()
+    model_dir = get_whatwhy_predictor_model_folder()
     word2vec_model = get_google_news_model()
     vocab_index = VocabularyIndex.from_lists(why_tokens)
     predictor = WhatWhyPredictor(word2vec_model, max_num_tokens_per_sample=max_num_tokens_per_sample, vocab_index=vocab_index)
-    predictor.save_token_vectorizers_to_pickle_files(vectorizers_dir, what_tokens, why_tokens)
-    predictor.save_train_and_test_data_to_pickle_files(vectorizers_dir)
+    predictor.save_to_pickle_file(model_dir)
     return predictor
 
 def train_and_save_whatwhy_predictor(predictor, epochs, batch_size):
     model_dir = get_whatwhy_predictor_model_folder()
     predictor.fit_tokens(epochs=epochs, batch_size=batch_size)
-    predictor.save_model(model_dir)
+    predictor.save_to_pickle_file(model_dir)
 
-def load_whatwhy_predictor(is_pretrained=False):
-    vectorizers_dir = get_whatwhy_predictor_vectorizers_folder()
+def load_whatwhy_predictor():
     model_dir = get_whatwhy_predictor_model_folder()
-    predictor = WhatWhyPredictor()
-    predictor.load_token_vectorizers_from_pickle_files(vectorizers_dir)
-    predictor.load_train_and_test_data_from_pickle_files(vectorizers_dir)
-    if is_pretrained:
-        predictor.load_seq2seq_model_from_saved_tf_model(model_dir)
+    predictor = WhatWhyPredictor.load_from_pickle_file(model_dir)
     return predictor
 
 def main():
@@ -86,7 +80,7 @@ def main():
             predictor = load_whatwhy_predictor()
         train_and_save_whatwhy_predictor(predictor, args.epochs, args.batch_size)
     else:
-        predictor = load_whatwhy_predictor(is_pretrained=True)
+        predictor = load_whatwhy_predictor()
         if args.predict is not None:
             predictor.predict(args.predict)
         elif args.compare_test:
