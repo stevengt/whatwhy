@@ -1,11 +1,24 @@
 # What, why?
 
+*WhatWhy* is a collection of scripts used to explore the relationships between
+the *what* and the *why* of text passages – such as news articles – through the use
+of [Sequence-to-Sequence](https://www.geeksforgeeks.org/seq2seq-model-in-machine-learning/)
+models with a LSTM architecture. It can also be used for creating general models to
+generate sequences of text.
+
+This project offers both a Python library and a CLI to facilitate data preparation and
+model training. *What* and *why* phrases are extracted using the tool
+[Giveme5W1H](https://github.com/fhamborg/Giveme5W1H), and other tools are provided
+to perform data processing tasks for improving model accuracy, such as:
+- Preprocessing text to remove URL's and auto-correct misspelled words
+- Tokenizing and standardizing text (e.g., [lemmatization](https://nlp.stanford.edu/IR-book/html/htmledition/stemming-and-lemmatization-1.html) and removing "stop words")
+- Creating vector word embeddings and one-hot encodings
+
 ## Installation
 
-*WhatWhy* requires `swig3` to be installed (usually it is in your distro package manager).
-If using the included Docker files to extract WH phrases from text 
-(i.e., who, what, when, where, why, how), then `Docker` and `Docker Compose`
-are also required.
+*WhatWhy* requires `Python3.6` and `swig3` to be installed (this is usually in your distro package manager).
+If using the included Docker files to extract *what* and *why* phrases from text,
+then `Docker` and `Docker Compose` are also required.
 
 To install, simply clone the repository and install with `pip`:
 ```
@@ -91,7 +104,7 @@ optional arguments:
                         to include. (default: None)
 ```
 
-To extract the WH phrases (who, what, when, where, why, how) from text,
+To extract the *what* and *why* phrases from text,
 configure the following environment variables and run `make && make run-wh-phrase-extractor`
 from the project root directory to build and run the included Docker files:
 - `AWS_ACCESS_KEY_ID`
@@ -102,6 +115,7 @@ from the project root directory to build and run the included Docker files:
 - `WHATWHY_DEST_NAME`
 - `WHATWHY_ID_COL_NAME`
 - `WHATWHY_SOURCE_COL_NAME`
+- `WHATWHY_DOCKER_SERVICE_NAME` This is just an arbitrary identifier for the Docker service.
 
 To use the resulting set of prepared data to train and use a model, use the `whatwhy-model` CLI.
 
@@ -159,3 +173,131 @@ optional arguments:
 
 ### Example Usage
 
+Let's use the [Financial News Dataset from Reuters](https://github.com/duynht/financial-news-dataset).
+To compile the data set into a single CSV file, we can use a modified version of
+[these](https://github.com/Kriyszig/financial-news-data) scripts.
+
+```python
+import os
+import csv
+import pandas as pd
+
+def should_skip_file_or_folder(name):
+    return name.find(".tar") > -1 or name.find(".DS") > -1
+
+dir_name = os.path.join(os.path.curdir, "ReutersNews106521")
+df = pd.DataFrame(columns=["ID", "Content"])
+contents = []
+
+folder_names = os.listdir(dir_name)
+for folder_name in folder_names:
+    if should_skip_file_or_folder(folder_name):
+        continue
+    full_folder_name = os.path.join(dir_name, folder_name)
+    file_names = os.listdir(full_folder_name)
+    for file_name in file_names:
+        if should_skip_file_or_folder(file_name):
+            continue
+        full_file_name = os.path.join(full_folder_name, file_name)
+        with open(full_file_name, "r") as in_file:
+            lines = in_file.readlines()[8:]
+            content = " ".join(lines)
+            contents.append(content)
+
+contents_as_series = pd.Series(contents).dropna()
+df["Content"] = contents_as_series
+df["ID"] = df.index
+df.to_csv('newspd.csv', sep="\t", quoting=csv.QUOTE_ALL, quotechar='"')
+```
+
+With the data saved in newspd.csv, we can split it into batch files
+each containing 30 articles, preprocess the text, and then transfer the 
+preprocessed batches to a SQS queue. In this case the queue is named
+"whatwhy-phrase-extraction".
+
+```console
+$ whatwhy-text --populate \
+               --source-type fs \
+               --source-name newspd.csv \
+               --dest-type fs \
+               --dest-name raw-batches \
+               --batch-size 30
+
+$ whatwhy-text --process preprocessing \
+               --source-type fs \
+               --source-name raw-batches \
+               --dest-type sqs \
+               --dest-name whatwhy-phrase-extraction \
+               --source-col Content \
+               --delete-when-complete
+```
+
+Now, we can build and run the included Docker files (from
+the project root directory) to pull batches from SQS,
+extract the *what* and *why* phrases, and store the results
+in a S3 folder "whatwhy-data/news". To speed up processing,
+we can run this script multiple times in parallel
+(each with a different WHATWHY_DOCKER_SERVICE_NAME),
+potentially on multiple machines. To stop the process,
+enter `Ctrl+C`.
+
+**Warning**: This will use about 4GB of RAM due to the
+underlying [Stanford CoreNLP server](https://stanfordnlp.github.io/CoreNLP/corenlp-server.html).
+
+```console
+$ export AWS_ACCESS_KEY_ID=***** \
+         AWS_SECRET_ACCESS_KEY=***** \
+         WHATWHY_SOURCE_TYPE=sqs \
+         WHATWHY_SOURCE_NAME=whatwhy-phrase-extraction \
+         WHATWHY_DEST_TYPE=s3 \
+         WHATWHY_DEST_NAME=whatwhy-data/news \
+         WHATWHY_ID_COL_NAME=ID \
+         WHATWHY_SOURCE_COL_NAME="Processed Text" \
+         WHATWHY_DOCKER_SERVICE_NAME=whatwhy-docker-service-1
+$ make && make run-wh-phrase-extractor
+```
+
+To prepare the extracted *what* and *why* phrases for model training
+we pull the results from S3, split the phrases into lemmatized tokens,
+and consolidate the data into a single CSV file consolidated_batches.csv .
+
+```console
+$ whatwhy-text --process tokenize-wh-phrases \
+               --source-type s3 \
+               --source-name whatwhy-data/news \
+               --dest-type fs \
+               --dest-name tokens \
+               --delete-when-complete
+
+$ whatwhy-text --process consolidate \
+               --source-type fs \
+               --source-name tokens \
+               --dest-type fs \
+               --dest-name . \
+               --delete-when-complete
+```
+
+Then, we train our model! Here, we constrain sequences to have 4-10
+tokens, and each token must occur a mimimum of 30 times in the data set.
+
+```console
+$ whatwhy-model --train \
+                --csv-file-name consolidated_batches.csv \
+                --min-token-frequency 30 \
+                --min-tokens-per-sample 4 \
+                --max-tokens-per-sample 10 \
+                --batch-size 16 \
+                --epochs 100
+
+$ whatwhy-model --compare-test
+```
+
+Although the data is very noisy, some of the predictions from
+the testing data set are pretty close (emphasis is added for illustration):
+
+| Raw 'What' Input | Raw 'Why' Actual | 'Why' Predicted |
+|:-----------------|:-----------------|:----------------|
+| speedier delivery was not due to "any slowing of demand" but because the company | *company* has *increased* its *production* capacity | *good ceo production*             |
+| may set different deposit reserve ratios and adopt more frequent use             | the People's *Bank of China* (PBOC)                 | agreed competition *foreign loan* |
+| remains strong, although recent market turmoil                                   | *concerns* about slowing *economic* growth          | *fear* demand *economic*          |
+ 

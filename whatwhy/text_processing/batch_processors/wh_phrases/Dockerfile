@@ -35,24 +35,24 @@ ARG WHATWHY_SOURCE_COL_NAME
 ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
 ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
 ENV WHATWHY_SOURCE_TYPE=${WHATWHY_SOURCE_TYPE}
-ENV WHATWHY_SOURCE_NAME=${WHATWHY_SOURCE_NAME}
+ENV WHATWHY_SOURCE_NAME="${WHATWHY_SOURCE_NAME}"
 ENV WHATWHY_DEST_TYPE=${WHATWHY_DEST_TYPE}
-ENV WHATWHY_DEST_NAME=${WHATWHY_DEST_NAME}
-ENV WHATWHY_ID_COL_NAME=${WHATWHY_ID_COL_NAME}
-ENV WHATWHY_SOURCE_COL_NAME=${WHATWHY_SOURCE_COL_NAME}
+ENV WHATWHY_DEST_NAME="${WHATWHY_DEST_NAME}"
+ENV WHATWHY_ID_COL_NAME="${WHATWHY_ID_COL_NAME}"
+ENV WHATWHY_SOURCE_COL_NAME="${WHATWHY_SOURCE_COL_NAME}"
 
 # Install whatwhy.
 WORKDIR /opt/whatwhy
 COPY . .
 RUN pip install .
 
-RUN echo "whatwhy-text --process     wh-phrases \
-                       --source-type $WHATWHY_SOURCE_TYPE \
-                       --source-name $WHATWHY_SOURCE_NAME \
-                       --dest-type   $WHATWHY_DEST_TYPE \
-                       --dest-name   $WHATWHY_DEST_NAME \
-                       --id-col      $WHATWHY_ID_COL_NAME \
-                       --source-col  $WHATWHY_SOURCE_COL_NAME &" > start-whatwhy && \
+RUN echo "whatwhy-text --process      wh-phrases \
+                       --source-type  $WHATWHY_SOURCE_TYPE \
+                       --source-name '$WHATWHY_SOURCE_NAME' \
+                       --dest-type    $WHATWHY_DEST_TYPE \
+                       --dest-name   '$WHATWHY_DEST_NAME' \
+                       --id-col      '$WHATWHY_ID_COL_NAME' \
+                       --source-col  '$WHATWHY_SOURCE_COL_NAME' &" > start-whatwhy && \
     chmod +x start-whatwhy
 RUN echo "pkill whatwhy-text" > stop-whatwhy && chmod +x stop-whatwhy
 RUN echo "./stop-whatwhy && ./start-whatwhy" > restart-whatwhy && chmod +x restart-whatwhy
