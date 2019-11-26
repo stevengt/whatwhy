@@ -65,30 +65,30 @@ Supported batch processing tasks are:
 
 optional arguments:
   -h, --help            show this help message and exit
-  --populate            Use this argument to split a single CSV file into multiple batch files.
+  --populate            Use this argument to split a single CSV file into multiple batch files. (default: False)
   --process {preprocessing,wh-phrases,transfer,tokenize,tokenize-wh-phrases,consolidate}
   -st {fs,s3,sqs}, --source-type {fs,s3,sqs}
   -sn SOURCE_NAME, --source-name SOURCE_NAME
-                        If using S3, use the format bucket-name/folder/name.
+                        If using S3, use the format bucket-name/folder/name. (default: None)
   -dt {fs,s3,sqs}, --dest-type {fs,s3,sqs}
   -dn DEST_NAME, --dest-name DEST_NAME
-                        If using S3, use the format bucket-name/folder/name.
+                        If using S3, use the format bucket-name/folder/name. (default: None)
   -d, --delete-when-complete
-                        Optional flag to delete batches from the source after processing them.
+                        Optional flag to delete batches from the source after processing them. (default: False)
   -bs BATCH_SIZE, --batch-size BATCH_SIZE
                         The number of rows each CSV batch file should have if 
-                        using the --populate flag.
+                        using the --populate flag. (default: 1000)
   --aws-region AWS_REGION
-                        Name of AWS region, if using SQS.
+                        Name of AWS region, if using SQS. (default: us-east-1)
   --id-col ID_COL       Name of the column to treat as an index containing 
-                        unique identifiers for data rows.
+                        unique identifiers for data rows. (default: ID)
   --source-col SOURCE_COL
-                        Name of the column to perform processing tasks on.
-  --dest-col DEST_COL   Name of the column to store results in after processing data.
+                        Name of the column to perform processing tasks on. (default: Preprocessed Text)
+  --dest-col DEST_COL   Name of the column to store results in after processing data. (default: Processed Text)
   --include-cols [INCLUDE_COLS [INCLUDE_COLS ...]]
                         By default, only the ID and destination columns will be written to 
                         the destination. Use this argument to specify any additional columns 
-                        to include.
+                        to include. (default: None)
 ```
 
 To extract the WH phrases (who, what, when, where, why, how) from text,
@@ -130,30 +130,31 @@ files on a large enough disk.
 optional arguments:
   -h, --help            show this help message and exit
   --train               Trains a prediction model using a supplied CSV file or previously loaded 
-                        data set. This will overwrite any previously trained models.
+                        data set. This will overwrite any previously trained models. (default: False)
   --predict PREDICT [PREDICT ...]
                         Uses a previously trained model to predict a sequence of 'why' text 
-                        from the input 'what' text.
+                        from the input 'what' text. (default: None)
   --compare-test        Uses a previously trained model to compare its predictions 
-                        against its testing data set.
+                        against its testing data set. (default: False)
   --compare-train       Uses a previously trained model to compare its predictions 
-                        against its training data set.
+                        against its training data set. (default: False)
   -csv CSV_FILE_NAME, --csv-file-name CSV_FILE_NAME
                         Name of a tab delimited local CSV file containing a data set for model training. 
                         If left blank, the most recently loaded data set will be used. 
                         CSV files must include columns labeled 'what tokens' and 'why tokens', 
-                        each containing plain-text representations of a Python list of strings.
+                        each containing plain-text representations of a Python list of strings. (default: None)
   --min-token-frequency MIN_TOKEN_FREQUENCY
                         The minimum number of times a token should occur in the dataset 
-                        to be used for training a WhatWhyPredictor model.
+                        to be used for training a WhatWhyPredictor model. (default: 30)
   -min-tokens MIN_TOKENS_PER_SAMPLE, --min-tokens-per-sample MIN_TOKENS_PER_SAMPLE
                         The minimum number of tokens a sample should contain to be used 
-                        for training a WhatWhyPredictor model.
+                        for training a WhatWhyPredictor model. (default: 4)
   -max-tokens MAX_TOKENS_PER_SAMPLE, --max-tokens-per-sample MAX_TOKENS_PER_SAMPLE
                         The maximum number of tokens a sample should contain for training 
-                        a WhatWhyPredictor model. Any extra tokens will be truncated.
+                        a WhatWhyPredictor model. Any extra tokens will be truncated. (default: 10)
   -bs BATCH_SIZE, --batch-size BATCH_SIZE
-  --epochs EPOCHS
+                        Size of batches to use during model training. (default: 16)
+  --epochs EPOCHS       Number of epochs used to train a model. (default: 10)
 ```
 
 ### Example Usage

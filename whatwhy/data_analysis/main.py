@@ -1,5 +1,5 @@
 import argparse
-from argparse import RawTextHelpFormatter
+from whatwhy import RawTextAndArgumentDefaultsHelpFormatter
 from whatwhy import QUESTION_WORDS
 from whatwhy.text_processing.helper_methods import get_df_from_file
 from whatwhy.resource_manager import get_google_news_model, get_whatwhy_predictor_vectorizers_folder, get_whatwhy_predictor_model_folder
@@ -70,7 +70,7 @@ def load_whatwhy_predictor(is_pretrained=False):
     return predictor
 
 def main():
-    parser = argparse.ArgumentParser(description=description, formatter_class=RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(description=description, formatter_class=RawTextAndArgumentDefaultsHelpFormatter)
     arggroup = parser.add_mutually_exclusive_group(required=True)
 
     arggroup.add_argument( "--train",
@@ -141,12 +141,14 @@ def main():
     parser.add_argument( "-bs",
                          "--batch-size",
                          type=int,
-                         default=16
+                         default=16,
+                         help="Size of batches to use during model training."
                        )
 
     parser.add_argument( "--epochs",
                          type=int,
-                         default=10
+                         default=10,
+                         help="Number of epochs used to train a model."
                        )
 
     args = parser.parse_args()

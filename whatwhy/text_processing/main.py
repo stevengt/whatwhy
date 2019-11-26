@@ -1,5 +1,5 @@
 import argparse
-from argparse import RawTextHelpFormatter
+from whatwhy import RawTextAndArgumentDefaultsHelpFormatter
 from .helper_methods import get_df_from_file
 from .clients import FileSystemBatchSource, FileSystemBatchDestination, S3BatchSource, S3BatchDestination, SQSBatchSource, SQSBatchDestination
 from .batch_processors import BatchTransferer, BatchPreprocessor, WHPhrasesBatchProcessor, BatchTokenizer, BatchWHPhrasesTokenizer, BatchConsolidator
@@ -105,7 +105,7 @@ def process(batch_processor):
     batch_processor.run()
 
 def main():
-    parser = argparse.ArgumentParser(description=description, formatter_class=RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(description=description, formatter_class=RawTextAndArgumentDefaultsHelpFormatter)
     arggroup = parser.add_mutually_exclusive_group(required=True)
 
     arggroup.add_argument( "--populate",
