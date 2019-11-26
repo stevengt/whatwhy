@@ -297,7 +297,7 @@ the testing data set are pretty close (emphasis is added for illustration):
 
 | Raw 'What' Input | Raw 'Why' Actual | 'Why' Predicted |
 |:-----------------|:-----------------|:----------------|
-| speedier delivery was not due to "any slowing of demand" but because the company | *company* has *increased* its *production* capacity | *good ceo production*             |
-| may set different deposit reserve ratios and adopt more frequent use             | the People's *Bank of China* (PBOC)                 | agreed competition *foreign loan* |
-| remains strong, although recent market turmoil                                   | *concerns* about slowing *economic* growth          | *fear* demand *economic*          |
+| speedier delivery was not due to "any slowing of demand" but because the company | **company** has **increased** its **production** capacity | **good ceo production**             |
+| may set different deposit reserve ratios and adopt more frequent use             | the People's **Bank of China** (PBOC)                     | agreed competition **foreign loan** |
+| remains strong, although recent market turmoil                                   | **concerns** about slowing **economic** growth            | **fear** demand **economic**        |
  
