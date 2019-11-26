@@ -20,6 +20,10 @@ Data must be read from, and written to, one of these supported locations:
     - Amazon S3
     - Amazon SQS
 
+If using AWS, credentials should be stored in a format compatible with boto3,
+such as environment variables or a credentials file. For more information, see:
+https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
+
 Supported batch processing tasks are:
     - consolidate   : Consolidates data from multiple CSV files into a single CSV file.
     - transfer      : Transfers a batch of data without changing its contents.
@@ -36,7 +40,7 @@ Supported batch processing tasks are:
                             'when tokens', 'where tokens', 'why tokens', and 'how tokens'.
 """
 
-def get_batch_source(source_type, source_name, delete_when_complete):
+def get_batch_source(source_type, source_name, delete_when_complete, aws_region_name):
     if source_type == "fs":
         return FileSystemBatchSource(source_name, delete_when_complete=delete_when_complete)
     elif source_type == "s3":
@@ -45,11 +49,11 @@ def get_batch_source(source_type, source_name, delete_when_complete):
         folder_name = "/".join(source_names[1:])
         return S3BatchSource(bucket_name=bucket_name, folder_name=folder_name, delete_when_complete=delete_when_complete)
     elif source_type == "sqs":
-        return SQSBatchSource(source_name)
+        return SQSBatchSource(source_name, aws_region_name)
     else:
         raise AttributeError(f"Unsupported batch source type {source_type}.")
 
-def get_batch_destination(dest_type, dest_name):
+def get_batch_destination(dest_type, dest_name, aws_region_name):
     if dest_type == "fs":
         return FileSystemBatchDestination(dest_name)
     elif dest_type == "s3":
@@ -58,17 +62,17 @@ def get_batch_destination(dest_type, dest_name):
         folder_name = "/".join(dest_names[1:])
         return S3BatchDestination(bucket_name=bucket_name, folder_name=folder_name)
     elif dest_type == "sqs":
-        return SQSBatchDestination(dest_name)
+        return SQSBatchDestination(dest_name, aws_region_name)
     else:
         raise AttributeError(f"Unsupported batch destination type {dest_type}.")
 
-def get_batch_processor(batch_processor_type,
-                            batch_source,
-                            batch_dest,
-                            id_col_name=None,
-                            source_col_name=None,
-                            dest_col_name=None,
-                            include_cols=None):
+def get_batch_processor( batch_processor_type,
+                         batch_source,
+                         batch_dest,
+                         id_col_name=None,
+                         source_col_name=None,
+                         dest_col_name=None,
+                         include_cols=None ):
     kwargs = {
         "source" : batch_source, 
         "dest" : batch_dest,
@@ -102,41 +106,115 @@ def process(batch_processor):
 
 def main():
     parser = argparse.ArgumentParser(description=description, formatter_class=RawTextHelpFormatter)
-
     arggroup = parser.add_mutually_exclusive_group(required=True)
-    arggroup.add_argument("--populate", action="store_true", help="Use this argument to split a single CSV file into multiple batch files.")
-    arggroup.add_argument("--process", choices=["preprocessing", "wh-phrases", "transfer", "tokenize", "tokenize-wh-phrases", "consolidate"] )
 
-    parser.add_argument("-st", "--source-type", choices=["fs", "s3", "sqs"], required=True)
-    parser.add_argument("-sn", "--source-name", required=True, help="If using S3, use the format bucket-name/folder/name.")
-    parser.add_argument("-dt", "--dest-type", choices=["fs", "s3", "sqs"], required=True)
-    parser.add_argument("-dn", "--dest-name", required=True, help="If using S3, use the format bucket-name/folder/name.")
+    arggroup.add_argument( "--populate",
+                           action="store_true",
+                           help="Use this argument to split a single CSV file into multiple batch files."
+                         )
 
-    parser.add_argument("-d", "--delete-when-complete", default=False, action="store_true", help="Optional flag to delete batches from the source after processing them.")
-    parser.add_argument("-bs", "--batch-size", type=int, default=1000, help="The number of rows each CSV batch file should have if using the --populate flag.")
+    arggroup.add_argument( "--process",
+                           choices=["preprocessing", "wh-phrases", "transfer", "tokenize", "tokenize-wh-phrases", "consolidate"]
+                         )
 
-    parser.add_argument("--id-col", default="ID", help="Name of the column to treat as an index containing unique identifiers for data rows.")
-    parser.add_argument("--source-col", default="Preprocessed Text", help="Name of the column to perform processing tasks on.")
-    parser.add_argument("--dest-col", default="Processed Text", help="Name of the column to store results in after processing data.")
-    parser.add_argument("--include-cols", nargs="*", default=None, help="By default, only the ID and destination columns will be written to the destination. " \
-                                                                            + "Use this argument to specify any additional columns to include.")
+    parser.add_argument( "-st",
+                         "--source-type",
+                         required=True,
+                         choices=["fs", "s3", "sqs"]
+                       )
+
+    parser.add_argument( "-sn",
+                         "--source-name",
+                         required=True,
+                         help="If using S3, use the format bucket-name/folder/name."
+                       )
+
+    parser.add_argument( "-dt",
+                         "--dest-type",
+                         required=True,
+                         choices=["fs", "s3", "sqs"]
+                       )
+
+    parser.add_argument( "-dn",
+                         "--dest-name",
+                         required=True,
+                         help="If using S3, use the format bucket-name/folder/name."
+                       )
+
+    parser.add_argument( "-d",
+                         "--delete-when-complete",
+                         default=False,
+                         action="store_true",
+                         help="Optional flag to delete batches from the source after processing them."
+                       )
+
+    parser.add_argument( "-bs",
+                         "--batch-size",
+                         type=int,
+                         default=1000,
+                         help=( "The number of rows each CSV batch file should have if \n"
+                                "using the --populate flag."
+                              )
+                       )
+
+    parser.add_argument( "--aws-region",
+                         default="us-east-1",
+                         help="Name of AWS region, if using SQS."
+                       )
+
+    parser.add_argument( "--id-col",
+                         default="ID",
+                         help=( "Name of the column to treat as an index containing \n"
+                                "unique identifiers for data rows."
+                              )
+                       )
+
+    parser.add_argument( "--source-col",
+                         default="Preprocessed Text",
+                         help="Name of the column to perform processing tasks on."
+                       )
+
+    parser.add_argument( "--dest-col",
+                         default="Processed Text",
+                         help="Name of the column to store results in after processing data."
+                       )
+
+    parser.add_argument( "--include-cols",
+                         nargs="*",
+                         default=None,
+                         help=( "By default, only the ID and destination columns will be written to \n" 
+                                "the destination. Use this argument to specify any additional columns \n"
+                                "to include."
+                              )
+                       )
 
     args = parser.parse_args()
 
-    batch_dest = get_batch_destination(args.dest_type, args.dest_name)
+    batch_dest = get_batch_destination( args.dest_type,
+                                        args.dest_name,
+                                        args.aws_region
+                                      )
 
     if args.populate:
         df_file_name = args.source_name
-        populate(df_file_name, batch_dest, args.batch_size)
+        populate( df_file_name,
+                  batch_dest,
+                  args.batch_size
+                )
     else:
-        batch_source = get_batch_source(args.source_type, args.source_name, args.delete_when_complete)
-        batch_processor = get_batch_processor(batch_processor_type=args.process,
-                                                batch_source=batch_source,
-                                                batch_dest=batch_dest,
-                                                id_col_name=args.id_col,
-                                                source_col_name=args.source_col,
-                                                dest_col_name=args.dest_col,
-                                                include_cols=args.include_cols)
+        batch_source = get_batch_source( args.source_type,
+                                         args.source_name,
+                                         args.delete_when_complete,
+                                         args.aws_region
+                                       )
+        batch_processor = get_batch_processor( batch_processor_type=args.process,
+                                               batch_source=batch_source,
+                                               batch_dest=batch_dest,
+                                               id_col_name=args.id_col,
+                                               source_col_name=args.source_col,
+                                               dest_col_name=args.dest_col,
+                                               include_cols=args.include_cols
+                                             )
         process(batch_processor)
 
 if __name__ == "__main__":

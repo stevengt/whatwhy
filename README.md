@@ -24,8 +24,9 @@ To prepare a CSV data set of text for use during model training, use the `whatwh
 usage: whatwhy-text [-h]
                     (--populate | --process {preprocessing,wh-phrases,transfer,tokenize,tokenize-wh-phrases,consolidate})
                     -st {fs,s3,sqs} -sn SOURCE_NAME -dt {fs,s3,sqs} -dn
-                    DEST_NAME [-d] [-bs BATCH_SIZE] [--id-col ID_COL]
-                    [--source-col SOURCE_COL] [--dest-col DEST_COL]
+                    DEST_NAME [-d] [-bs BATCH_SIZE] [--aws-region AWS_REGION]
+                    [--id-col ID_COL] [--source-col SOURCE_COL]
+                    [--dest-col DEST_COL]
                     [--include-cols [INCLUDE_COLS [INCLUDE_COLS ...]]]
 
 This is a CLI for batch processing text data. Specifically, it is used
@@ -42,6 +43,10 @@ Data must be read from, and written to, one of these supported locations:
     - Local File System
     - Amazon S3
     - Amazon SQS
+
+If using AWS, credentials should be stored in a format compatible with boto3,
+such as environment variables or a credentials file. For more information, see:
+https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
 
 Supported batch processing tasks are:
     - consolidate   : Consolidates data from multiple CSV files into a single CSV file.
@@ -71,18 +76,24 @@ optional arguments:
   -d, --delete-when-complete
                         Optional flag to delete batches from the source after processing them.
   -bs BATCH_SIZE, --batch-size BATCH_SIZE
-                        The number of rows each CSV batch file should have if using the --populate flag.
-  --id-col ID_COL       Name of the column to treat as an index containing unique identifiers for data rows.
+                        The number of rows each CSV batch file should have if 
+                        using the --populate flag.
+  --aws-region AWS_REGION
+                        Name of AWS region, if using SQS.
+  --id-col ID_COL       Name of the column to treat as an index containing 
+                        unique identifiers for data rows.
   --source-col SOURCE_COL
                         Name of the column to perform processing tasks on.
   --dest-col DEST_COL   Name of the column to store results in after processing data.
   --include-cols [INCLUDE_COLS [INCLUDE_COLS ...]]
-                        By default, only the ID and destination columns will be written to the destination. Use this argument to specify any additional columns to include.
+                        By default, only the ID and destination columns will be written to 
+                        the destination. Use this argument to specify any additional columns 
+                        to include.
 ```
 
 To extract the WH phrases (who, what, when, where, why, how) from text,
 configure the following environment variables and run `make && make run-wh-phrase-extractor`
-to build and run the included Docker files:
+from the project root directory to build and run the included Docker files:
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 - `WHATWHY_SOURCE_TYPE`
@@ -118,22 +129,29 @@ files on a large enough disk.
 
 optional arguments:
   -h, --help            show this help message and exit
-  --train               Train a prediction model using a supplied CSV file or previously loaded data set.
+  --train               Trains a prediction model using a supplied CSV file or previously loaded 
+                        data set. This will overwrite any previously trained models.
   --predict PREDICT [PREDICT ...]
-                        Uses a previously trained model to predict a sequence of 'why' text from the input 'what' text.
-  --compare-test        Uses a previously trained model to compare its predictions against its testing data set.
-  --compare-train       Uses a previously trained model to compare its predictions against its training data set.
+                        Uses a previously trained model to predict a sequence of 'why' text 
+                        from the input 'what' text.
+  --compare-test        Uses a previously trained model to compare its predictions 
+                        against its testing data set.
+  --compare-train       Uses a previously trained model to compare its predictions 
+                        against its training data set.
   -csv CSV_FILE_NAME, --csv-file-name CSV_FILE_NAME
-                        Name of a tab delimited local CSV file containing a data set for model training.
-                        If left blank, the most recently loaded data set will be used.
-                        CSV files must include columns labeled 'what tokens' and 'why tokens',
+                        Name of a tab delimited local CSV file containing a data set for model training. 
+                        If left blank, the most recently loaded data set will be used. 
+                        CSV files must include columns labeled 'what tokens' and 'why tokens', 
                         each containing plain-text representations of a Python list of strings.
   --min-token-frequency MIN_TOKEN_FREQUENCY
-                        The minimum number of times a token should occur in the dataset to be used for training a WhatWhyPredictor model.
+                        The minimum number of times a token should occur in the dataset 
+                        to be used for training a WhatWhyPredictor model.
   -min-tokens MIN_TOKENS_PER_SAMPLE, --min-tokens-per-sample MIN_TOKENS_PER_SAMPLE
-                        The minimum number of tokens a sample should contain to be used for training a WhatWhyPredictor model.
+                        The minimum number of tokens a sample should contain to be used 
+                        for training a WhatWhyPredictor model.
   -max-tokens MAX_TOKENS_PER_SAMPLE, --max-tokens-per-sample MAX_TOKENS_PER_SAMPLE
-                        The maximum number of tokens a sample should contain for training a WhatWhyPredictor model. Any extra tokens will be truncated.
+                        The maximum number of tokens a sample should contain for training 
+                        a WhatWhyPredictor model. Any extra tokens will be truncated.
   -bs BATCH_SIZE, --batch-size BATCH_SIZE
   --epochs EPOCHS
 ```

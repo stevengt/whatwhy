@@ -2,6 +2,14 @@ import os
 from .client import logger, BatchSourceBase, BatchDestinationBase
 
 class FileSystemBatchSource(BatchSourceBase):
+    """
+    Retrieves batch files from a local file system folder.
+
+    Each instance of this class should only have ONE consumer.
+    
+    This class iterates through all the files available in the folder
+    at the time of instantiation, and optionally deletes them as they are processed.
+    """
 
     def __init__(self, folder_name, delete_when_complete=False):
         logger.info(f"Reading batches from local folder {folder_name}.")
@@ -31,6 +39,7 @@ class FileSystemBatchSource(BatchSourceBase):
                 logger.error(f"Failed to delete batch from local folder: {e}")
 
 class FileSystemBatchDestination(BatchDestinationBase):
+    """Writes batch files to a local file system folder."""
 
     def __init__(self, folder_name):
         logger.info(f"Writing batches to local folder {folder_name}.")

@@ -12,11 +12,15 @@ class S3ClientBase():
 class S3BatchSource(S3ClientBase, BatchSourceBase):
     """
     Retrieves batch files from AWS S3.
-    
+
+    AWS credentials should be stored in a format compatible with boto3,
+    such as environment variables or a credentials file. For more information, see:
+    https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
+
     Each instance of this class should only have ONE consumer.
     
     This class iterates through all the files available in the bucket/folder
-    at the time of instantiation, and deletes them as they are processed.
+    at the time of instantiation, and optionally deletes them as they are processed.
     """
 
     def __init__(self, bucket_name, folder_name, delete_when_complete=False):
@@ -49,6 +53,13 @@ class S3BatchSource(S3ClientBase, BatchSourceBase):
                 self.cur_batch_key = None
 
 class S3BatchDestination(S3ClientBase, BatchDestinationBase):
+    """
+    Writes batch files to AWS S3.
+    
+    AWS credentials should be stored in a format compatible with boto3,
+    such as environment variables or a credentials file. For more information, see:
+    https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
+    """
 
     def __init__(self, bucket_name, folder_name):
         super().__init__(bucket_name, folder_name)

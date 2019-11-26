@@ -11,7 +11,12 @@ class SQSClientBase():
 
 class SQSBatchSource(SQSClientBase, BatchSourceBase):
     """
-    Retrieves messages from AWS SQS.
+    Retrieves batch files from AWS SQS.
+    
+    AWS credentials should be stored in a format compatible with boto3,
+    such as environment variables or a credentials file. For more information, see:
+    https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
+    
     Each instance of this class should only have ONE consumer.
     """
     
@@ -38,6 +43,13 @@ class SQSBatchSource(SQSClientBase, BatchSourceBase):
             return
 
 class SQSBatchDestination(SQSClientBase, BatchDestinationBase):
+    """
+    Writes batch files to AWS SQS.
+
+    AWS credentials should be stored in a format compatible with boto3,
+    such as environment variables or a credentials file. For more information, see:
+    https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html
+    """
 
     def __init__(self, queue_name, region_name="us-east-1"):
         super().__init__(queue_name, region_name)
