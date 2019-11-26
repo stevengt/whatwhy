@@ -117,6 +117,9 @@ from the project root directory to build and run the included Docker files:
 - `WHATWHY_SOURCE_COL_NAME`
 - `WHATWHY_DOCKER_SERVICE_NAME` This is just an arbitrary identifier for the Docker service.
 
+**Warning**: This will use about 4GB of RAM due to the
+underlying [Stanford CoreNLP server](https://stanfordnlp.github.io/CoreNLP/corenlp-server.html).
+
 To use the resulting set of prepared data to train and use a model, use the `whatwhy-model` CLI.
 
 ```
@@ -215,7 +218,7 @@ each containing 30 articles, preprocess the text, and then transfer the
 preprocessed batches to a SQS queue. In this case the queue is named
 "whatwhy-phrase-extraction".
 
-```console
+```
 $ whatwhy-text --populate \
                --source-type fs \
                --source-name newspd.csv \
@@ -232,19 +235,16 @@ $ whatwhy-text --process preprocessing \
                --delete-when-complete
 ```
 
-Now, we can build and run the included Docker files (from
-the project root directory) to pull batches from SQS,
+Now, we can build and run (from the project root directory)
+the included Docker files to pull batches from SQS,
 extract the *what* and *why* phrases, and store the results
 in a S3 folder "whatwhy-data/news". To speed up processing,
 we can run this script multiple times in parallel
-(each with a different WHATWHY_DOCKER_SERVICE_NAME),
+(each with a different `WHATWHY_DOCKER_SERVICE_NAME`),
 potentially on multiple machines. To stop the process,
 enter `Ctrl+C`.
 
-**Warning**: This will use about 4GB of RAM due to the
-underlying [Stanford CoreNLP server](https://stanfordnlp.github.io/CoreNLP/corenlp-server.html).
-
-```console
+```
 $ export AWS_ACCESS_KEY_ID=***** \
          AWS_SECRET_ACCESS_KEY=***** \
          WHATWHY_SOURCE_TYPE=sqs \
@@ -261,7 +261,7 @@ To prepare the extracted *what* and *why* phrases for model training
 we pull the results from S3, split the phrases into lemmatized tokens,
 and consolidate the data into a single CSV file consolidated_batches.csv .
 
-```console
+```
 $ whatwhy-text --process tokenize-wh-phrases \
                --source-type s3 \
                --source-name whatwhy-data/news \
@@ -280,7 +280,7 @@ $ whatwhy-text --process consolidate \
 Then, we train our model! Here, we constrain sequences to have 4-10
 tokens, and each token must occur a mimimum of 30 times in the data set.
 
-```console
+```
 $ whatwhy-model --train \
                 --csv-file-name consolidated_batches.csv \
                 --min-token-frequency 30 \
