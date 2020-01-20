@@ -14,6 +14,16 @@ to perform data processing tasks for improving model accuracy, such as:
 - Tokenizing and standardizing text (e.g., [lemmatization](https://nlp.stanford.edu/IR-book/html/htmledition/stemming-and-lemmatization-1.html) and removing "stop words")
 - Creating vector word embeddings and one-hot encodings
 
+## Example
+
+| Raw 'What' Input | Raw 'Why' Actual | 'Why' Predicted |
+|:-----------------|:-----------------|:----------------|
+| speedier delivery was not due to "any slowing of demand" but because the company | **company** has **increased** its **production** capacity | **good ceo production**             |
+| may set different deposit reserve ratios and adopt more frequent use             | the People's **Bank of China** (PBOC)                     | agreed competition **foreign loan** |
+| remains strong, although recent market turmoil                                   | **concerns** about slowing **economic** growth            | **fear** demand **economic**        |
+
+See below for the full example.
+
 ## Installation
 
 *WhatWhy* requires `Python3.6` and `swig3` to be installed (this is usually in your distro package manager).
