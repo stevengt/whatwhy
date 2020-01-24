@@ -14,6 +14,8 @@ to perform data processing tasks for improving model accuracy, such as:
 - Tokenizing and standardizing text (e.g., [lemmatization](https://nlp.stanford.edu/IR-book/html/htmledition/stemming-and-lemmatization-1.html) and removing "stop words")
 - Creating vector word embeddings and one-hot encodings
 
+![whatwhy-architecture](images/whatwhy-architecture.png)
+
 ## Example
 
 | Raw 'What' Input | Raw 'Why' Actual | 'Why' Predicted |
