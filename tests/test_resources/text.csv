@@ -1,0 +1,5 @@
+"ID"	"Text"	"Preprocessed Text"
+"1"	"This is a normal sentence."	"This is a normal sentence."
+"2"	"Tgis word is misspelled."	"This word is misspelled."
+"3"	"This sentence contains a URL www.google.com"	"This sentence contains a URL "
+"4"
