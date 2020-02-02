@@ -21,13 +21,13 @@ def test_get_batch_results(TEXT_CSV_DATA):
         actual = row["Actual Preprocessed Text"]
         assert ( pd.isnull(expected) and pd.isnull(actual) ) or ( expected == actual )
 
-def test_remove_url(TEXT_CSV_DATA):
+def test_remove_url():
     batch_preprocessor = BatchPreprocessor(source=None, dest=None)
     assert batch_preprocessor.remove_url(None) is None
     assert batch_preprocessor.remove_url("lorem ipsum www.google.com") == "lorem ipsum "
     assert batch_preprocessor.remove_url("lorem ipsum") == "lorem ipsum"
 
-def test_autocorrect_spelling(TEXT_CSV_DATA):
+def test_autocorrect_spelling():
     batch_preprocessor = BatchPreprocessor(source=None, dest=None)
     assert batch_preprocessor.autocorrect_spelling(None) is None
     assert batch_preprocessor.autocorrect_spelling("Tgis word is misspelled.") == "This word is misspelled."
